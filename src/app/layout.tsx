@@ -29,9 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       > 
-        <div className='grid grid-cols-[300px_auto]'>
+        <div className='flex'>
           <Sidebar/>
-          <div>
+          <div className="w-full bg-amber-50">
           <Navbar />
           <div> {children}</div>
           </div>
