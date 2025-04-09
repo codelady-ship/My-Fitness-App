@@ -23,12 +23,13 @@
       }
     ]
   },
+  
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "Store/SidebarStore.js"  ],
   "exclude": [
     "node_modules"
   ]

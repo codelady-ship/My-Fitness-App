@@ -67,8 +67,10 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
  dark/light mode
  side bar icon,baglayb aca bilek
  api qosmaq
- dasbroad
+ dasbroad 
  myfitnes usernamei deyismek
  search
  delete 
  edit button
+ cart melumatlari
+ user melumatlari

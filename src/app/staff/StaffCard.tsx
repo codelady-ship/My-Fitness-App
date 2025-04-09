@@ -10,13 +10,13 @@ const StaffCard = ({ id, image, FName, Lname, jobType }:any) => {
             <Image
               src={image}
               alt={`${FName} ${Lname}`}
-              className="w-24 h-24 object-cover rounded-full mx-auto"
+              className="w-24 h-24 object-cover mx-auto"
               width={96}
               height={96}
             />
             <div className="text-center mt-4">
               <h3 className="text-lg font-semibold">{FName} {Lname}</h3>
-              <p className="text-gray-600">Job: {jobType}</p>
+              <p className="text-gray-600 font-semibold">Job: {jobType}</p>
             </div>
           </div>
   )
