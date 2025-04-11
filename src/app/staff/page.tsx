@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { stafData } from '../../../Mock/staff'; 
+import { staffData } from '../../../Mock/staff'; 
 import StaffCard from './StaffCard';
 import useSidebarStore from '../../../Store/SidebarStore'; 
 
@@ -24,7 +24,7 @@ const Staff = () => {
         </Link>
       </div>
       <div className={`p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-5 overflow-auto  ${darkMode ? 'text-white' : ' text-gray-400'} `}>
-        {stafData.map((staff, index) => (
+        {staffData.map((staff, index) => (
           <StaffCard key={index} {...staff} />
         ))}
       </div>

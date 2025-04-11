@@ -9,9 +9,9 @@ const Navbar = () => {
   const { darkMode, toggleTheme } = useSidebarStore(); // Tema vəziyyətini əldə et və dəyişdir
   
   return (
-    <div className={`px-5 py-1 border-b-amber-700 sticky top-0 z-10 ${darkMode ? 'bg-black' : ' bg-yellow-50'}`}>
+    <div className={`px-5 py-1 border border-b-amber-700 sticky top-0 z-10 ${darkMode ? 'bg-black' : ' bg-yellow-50'}`}>
       <div className="flex justify-between h-[80px] items-center">
-        <Link href="/">
+        <Link href="/dashbroad">
          <h1 className={`font-bold text-5xl  ${darkMode ? 'text-yellow-50' : 'text-black' }`}>Fitness🥇</h1>
         </Link>
         <div className="flex items-center gap-2">

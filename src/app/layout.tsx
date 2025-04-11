@@ -16,6 +16,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      
       <body className={`${poppins.className} `}>
         <div className={`flex  ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
           <Sidebar />
