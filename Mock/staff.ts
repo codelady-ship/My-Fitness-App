@@ -3,12 +3,12 @@ import { IStaff } from "../Interface/staff";
 export const staffData: IStaff[] = [
   
     {id:"1",
-        FName: "John",
+        FName: "Jenny",
         Lname: "Doe",
-        email: "john.doe@gmmail.com",
+        email: "jenny.doe@gmmail.com",
         tel: "055-555-55-55",
         birth: "12.02.1996",
-        gender: "male",
+        gender: "Female",
         image: "/image.jpg", 
         jobType: "Trainer",
     },
@@ -18,7 +18,7 @@ export const staffData: IStaff[] = [
     email: "jane.doe@gmmail.com",
     tel: "055-555-55-56",
     birth: "15.04.1994",
-    gender: "male",
+    gender: "Female",
     image: "/image.jpg", 
     jobType: "Instructor",
     },
@@ -28,7 +28,7 @@ export const staffData: IStaff[] = [
     email:"adf@gmmail.com",
     tel:"055-555-55-55",
     birth:"12.02.1996",
-    gender:"male",
+    gender:"Female",
     image: "/image.jpg", 
     jobType:"trainer"
     },
