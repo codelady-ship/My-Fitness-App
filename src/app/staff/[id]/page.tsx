@@ -35,8 +35,8 @@ const StaffDetail = ({ params }: Iprops) => {
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'No, keep it',
-      background: darkMode ? '#1f2937' : '#000', 
-      color: darkMode ? '#f9fafb' : '#000',      
+      background: darkMode ? 'black' : 'white', 
+      color: darkMode ? 'white' : 'black',      
     }).then((result) => {
       if (result.isConfirmed) {
         // Silmə əməliyyatı burada edilir
@@ -49,8 +49,9 @@ const StaffDetail = ({ params }: Iprops) => {
       }
     });
   };
- //edit kart
-  const handleEdit = () => {
+
+    //edit kart
+   const handleEdit = () => {
     Swal.fire({
       title: 'Edit Staff',
        width:"40vw",
@@ -65,7 +66,7 @@ const StaffDetail = ({ params }: Iprops) => {
         <input type="email" id="email" class="swal2-input border" placeholder="Email" value="${email}">
         <input type="tel" id="tel" class="swal2-input border" placeholder="Phone" value="${tel}">
         <input type="date" id="birth" class="swal2-input" value="${birth}">
-        <div style="flex">
+        <div style="flex space-x-5">
          <select id="jobType" class="swal2-input border border-gray-300 my-3">
           <option value="Trainer" ${jobType === "Trainer" ? 'selected' : ''}>Trainer</option>
           <option value="Instructor" ${jobType === "Instructor" ? 'selected' : ''}>Instructor</option>
@@ -117,8 +118,8 @@ const StaffDetail = ({ params }: Iprops) => {
         }
       },
       focusCancel: true,
-      background: darkMode ? '#1f2937' : '#fff',
-      color: darkMode ? '#f9fafb' : '#000',
+      background: darkMode ? 'black' : 'white',
+      color: darkMode ? 'white' : 'black',
     });
   };
   
@@ -156,7 +157,7 @@ const StaffDetail = ({ params }: Iprops) => {
           <img
             src={image}
             alt={`${FName} ${Lname}`}
-            className="w-30 h-30 sm:w-50 sm:h-50 object-cover border border-amber-700 mb-4 sm:mb-0 lg:ml-80"
+            className="w-30 h-30 sm:w-50 sm:h-50 object-cover border border-amber-700 mb-4 sm:mb-0 lg:ml-100"
             width={200} 
             height={200} 
             loading="lazy"

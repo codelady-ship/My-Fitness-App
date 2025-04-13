@@ -39,15 +39,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
   
 
 
- myfitnes usernamei deyismek
+ myfitnes username deyismek
  settingde istifadecinin programin rengini deismeyin qur -dasbroadda 
  dil deysme-dashbroad
  dasbroad 
- detail
- creat staff
- search
- delete 
- edit button
- cart melumatlari
- user melumatlari
  api qosmaq
