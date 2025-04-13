@@ -11,6 +11,23 @@ export const showEditUserModal = (
     title: `<span style="font-size: 1.5rem; font-weight: bold;">Edit ${card.fullName}</span>`,
     html: `
       <div style="display: grid; gap: 10px; text-align: left;">
+      <div style="text-align: center; margin-left:85px ">
+          <label for="imageUpload" style="display: block; cursor: pointer;">
+            <img 
+              id="avatarPreview" 
+              src="/default-avatar.jpg" 
+              alt="Add photo" 
+              style="width: 120px; height: 120px; object-fit: cover; border: 2px solid #ccc; margin-left: 120px;" 
+            />
+          </label>
+          <input 
+            type="file" 
+            id="imageUpload" 
+            accept="image/*" 
+            class="swal2-input swal-form-input" 
+            style="display: none;" 
+          />
+        </div>
         ${inputField('Owner', 'owner', card.owner, 'text')}
         ${inputField('Full Name', 'fullName', card.fullName, 'text')}
         ${inputField('Email', 'email', card.email, 'email')}

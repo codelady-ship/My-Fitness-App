@@ -39,8 +39,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
   
 
 
- myfitnes username deyismek
+  myfitnes username deyismek
  settingde istifadecinin programin rengini deismeyin qur -dasbroadda 
  dil deysme-dashbroad
- dasbroad 
  api qosmaq
