@@ -1,9 +1,10 @@
 // components/userModals/addUserModal.ts
 import Swal from "sweetalert2";
+import { ICard } from '../../../../Interface/card';
 
 export const showAddUserModal = (
-  setCards: (cards: any[]) => void,
-  cards: any[],
+  setCards: (cards: ICard[]) => void,
+  cards: ICard[],
   darkMode: boolean
 ) => {
   Swal.fire({
@@ -66,7 +67,7 @@ export const showAddUserModal = (
         return false;
       }
 
-      const newCard = {
+      const newCard: ICard = {
         id: "C" + Math.floor(Math.random() * 1000000),
         owner: fullName,
         image: image, // Store the image URL or base64 string

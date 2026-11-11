@@ -6,6 +6,7 @@ import { showEditUserModal } from './Modals/userEditModal';
 import { showDeleteUserModal } from './Modals/userDeleteModal'; 
 import { showAddUserModal } from './Modals/addUserModal';
 import { showUserCardModal } from './Modals/userCardClick';
+import { ICard } from '../../../Interface/card';
 
 const Users = () => {
   const { darkMode } = useSidebarStore();
@@ -25,7 +26,7 @@ const Users = () => {
     );
   });
 
-  const handleEdit = (card: any) => {
+  const handleEdit = (card: ICard) => {
     showEditUserModal(card, setCards, cards, darkMode);
   };
 
@@ -37,7 +38,7 @@ const Users = () => {
     showAddUserModal(setCards, cards, darkMode);
   };
 
-  const handleCardClick = (card: any) => {
+  const handleCardClick = (card: ICard) => {
     showUserCardModal(card, setCards, cards, darkMode);
   };
 

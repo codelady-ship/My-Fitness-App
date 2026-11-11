@@ -7,13 +7,11 @@ import { CiEdit } from 'react-icons/ci'; // React Icons
 import { MdDeleteOutline } from 'react-icons/md'; // React Icons
 import Swal from 'sweetalert2'; // SweetAlert2 import
 import useSidebarStore from '../../../../Store/SidebarStore';
-interface Iprops {
-  params: { id: string };
-}
+import { useParams } from 'next/navigation';
 
-const StaffDetail = ({ params }: Iprops) => {
+const StaffDetail = () => {
   const { darkMode } = useSidebarStore();
-  const { id } = params;  
+  const { id } = useParams<{ id: string }>();
   const staffMember = staffData.find((s) => s.id === id);  // id müqayisə edilir
 
   if (!staffMember) {
