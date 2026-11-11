@@ -1,11 +1,12 @@
 import Swal from "sweetalert2";
 import { showEditUserModal } from "./userEditModal";
 import { showDeleteUserModal } from "./userDeleteModal";
+import { ICard } from '../../../../Interface/card';
 
 export const showUserCardModal = (
-  card: any,
-  setCards: any,
-  cards: any[],
+  card: ICard,
+  setCards: (cards: ICard[]) => void,
+  cards: ICard[],
   darkMode: boolean
 ) => {
   Swal.fire({

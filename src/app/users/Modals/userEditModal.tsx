@@ -49,15 +49,15 @@ export const showEditUserModal = (
       </div>
     `,
     preConfirm: () => {
-      const updatedCard: any = {
+      const updatedCard: ICard = {
         ...card,
         owner: (document.getElementById("owner") as HTMLInputElement).value,
         fullName: (document.getElementById("fullName") as HTMLInputElement).value,
         email: (document.getElementById("email") as HTMLInputElement).value,
         phone: (document.getElementById("phone") as HTMLInputElement).value,
-        gender: (document.getElementById("gender") as HTMLSelectElement).value,
+        gender: (document.getElementById("gender") as HTMLSelectElement).value as ICard['gender'],
         birthDate: (document.getElementById("birthDate") as HTMLInputElement).value,
-        membershipType: (document.getElementById("membershipType") as HTMLInputElement).value,
+        membershipType: (document.getElementById("membershipType") as HTMLInputElement).value as ICard['membershipType'],
         startDate: (document.getElementById("startDate") as HTMLInputElement).value,
         endDate: (document.getElementById("endDate") as HTMLInputElement).value,
         height: parseInt((document.getElementById("height") as HTMLInputElement).value),

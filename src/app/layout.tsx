@@ -6,7 +6,7 @@ import Sidebar from "../Components/Sidebar";
 import { Poppins } from 'next/font/google';
 import useSidebarStore  from '../../Store/SidebarStore';
 
-const poppins = Poppins({ weight: "100" });
+const poppins = Poppins({ weight: "100", subsets: ["latin"] });
 
 
 export default function RootLayout({

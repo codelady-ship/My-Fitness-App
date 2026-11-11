@@ -40,7 +40,7 @@ const Cards = () => {
           ))
         ) : (
           <div className="col-span-full text-center text-gray-500 text-lg font-medium">
-            No cards found for "<strong>{searchTerm}</strong>"
+            No cards found for &quot;<strong>{searchTerm}</strong>&quot;
           </div>
         )}
       </div>

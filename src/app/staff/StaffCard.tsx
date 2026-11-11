@@ -1,8 +1,9 @@
 import React from 'react'
 import Image from 'next/image';
 import Link from 'next/link';
+import { IStaff } from '../../../Interface/staff';
 
-const StaffCard = ({ id, image, FName, Lname, jobType }:any) => {
+const StaffCard = ({ id, image, FName, Lname, jobType }: IStaff) => {
   return (
     <div key={id} className="relative p-4 border border-amber-700 rounded-lg shadow-lg">
             {/* staff carda vuranda ozu detaile */}

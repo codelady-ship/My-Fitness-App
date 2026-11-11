@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { ICard } from '../../../Interface/card';
 
 const statusColors = {
   active: 'bg-green-200 text-green-800',
@@ -7,7 +8,7 @@ const statusColors = {
   passive: 'bg-gray-200 text-gray-800',
 };
 
-const CardItem = ({ owner, image, id, remainingAccesses, status,lastVisit, darkMode}: any) => {
+const CardItem = ({ owner, image, id, remainingAccesses, status,lastVisit, darkMode}: ICard & { darkMode: boolean }) => {
   return (
     <div
       className={`rounded-xl shadow-md py-4 px-5 m-5 transition hover:scale-105 cursor-pointer ${
