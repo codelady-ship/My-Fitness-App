@@ -1,14 +1,13 @@
-// next.config.js
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-
-  },
-  // There is no page at "/", so send visitors to the dashboard.
   async redirects() {
-    return [{ source: "/", destination: "/dashbroad", permanent: false }];
+    return [
+      // There is no page at "/", so send visitors to the dashboard.
+      { source: "/", destination: "/dashboard", permanent: false },
+      // Old misspelled route, kept so existing links still work.
+      { source: "/dashbroad", destination: "/dashboard", permanent: true },
+    ];
   },
 };
 

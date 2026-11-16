@@ -1,107 +1,100 @@
-// components/userModals/addUserModal.ts
 import Swal from "sweetalert2";
-import { ICard } from '../../../../Interface/card';
+import { ICard } from "../../../../Interface/card";
+import useDataStore from "../../../../Store/DataStore";
+import { bindAvatarInput, daysAgo, DEFAULT_AVATAR, esc } from "../../../../lib/utils";
+import { swalTheme, fieldStyle, labelStyle } from "./theme";
 
-export const showAddUserModal = (
-  setCards: (cards: ICard[]) => void,
-  cards: ICard[],
-  darkMode: boolean
-) => {
-  Swal.fire({
-    title: 'Add New User',
+export const showAddUserModal = async (darkMode: boolean) => {
+  const f = fieldStyle(darkMode);
+  const coaches = useDataStore
+    .getState()
+    .staff.filter((s) => s.jobType === "Trainer" || s.jobType === "Instructor")
+    .map((s) => `${s.FName} ${s.Lname}`);
+
+  const result = await Swal.fire<ICard>({
+    title: "Add new member",
+    width: "36rem",
+    ...swalTheme(darkMode),
+    showCancelButton: true,
+    confirmButtonText: "Add member",
+    focusConfirm: false,
     html: `
-      <div style="display: grid; gap: 15px; padding: 20px; max-width: 400px; margin: 0 auto;">
-        <!-- Avatar Preview and Upload -->
-        <div style="text-align: center;">
-          <label for="imageUpload" style="display: block; cursor: pointer;">
-            <img 
-              id="avatarPreview" 
-              src="/default-avatar.jpg" 
-              alt="Add photo" 
-              style="width: 120px; height: 120px; object-fit: cover; border: 2px solid #ccc; margin-left: 120px;" 
-            />
+      <div style="display:grid;gap:.75rem">
+        <label for="au-image" style="cursor:pointer;justify-self:center;text-align:center;font-size:.85rem">
+          <img id="au-preview" src="${DEFAULT_AVATAR}" alt="Photo preview"
+            style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;display:block;margin:0 auto .3rem" />
+          Add photo (optional)
+        </label>
+        <input id="au-image" type="file" accept="image/*" style="display:none" />
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.75rem">
+          <label style="${labelStyle}">Full name<input id="au-name" style="${f}" autocomplete="off"></label>
+          <label style="${labelStyle}">Email<input id="au-email" type="email" style="${f}"></label>
+          <label style="${labelStyle}">Phone<input id="au-phone" type="tel" style="${f}"></label>
+          <label style="${labelStyle}">Gender
+            <select id="au-gender" style="${f}"><option value="female">Female</option><option value="male">Male</option></select>
           </label>
-          <input 
-            type="file" 
-            id="imageUpload" 
-            accept="image/*" 
-            class="swal2-input swal-form-input" 
-            style="display: none;" 
-          />
+          <label style="${labelStyle}">Height (cm)<input id="au-height" type="number" min="100" max="250" style="${f}"></label>
+          <label style="${labelStyle}">Weight (kg)<input id="au-weight" type="number" min="30" max="250" style="${f}"></label>
+          <label style="${labelStyle}">Membership
+            <select id="au-type" style="${f}"><option value="Monthly">Monthly</option><option value="Year">Year</option></select>
+          </label>
+          <label style="${labelStyle}">Coach
+            <select id="au-coach" style="${f}">${coaches.map((c) => `<option>${esc(c)}</option>`).join("")}<option value="">No coach</option></select>
+          </label>
         </div>
-        
-        <!-- User Info Inputs -->
-        <input type="text" id="fullName" class="swal2-input" placeholder="Full Name" required />
-        <input type="email" id="email" class="swal2-input" placeholder="Email" required />
-        <input type="number" id="height" class="swal2-input" placeholder="Height (cm)" required />
-        <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required />
-        <input type="text" id="goals" class="swal2-input" placeholder="Goals" required />
-      </div>
-    `,
+        <label style="${labelStyle}">Goal<input id="au-goals" style="${f}" placeholder="e.g. Lose weight"></label>
+      </div>`,
+    didOpen: () => bindAvatarInput("au-image", "au-preview"),
     preConfirm: () => {
-      const fullName = (document.getElementById('fullName') as HTMLInputElement).value;
-      const email = (document.getElementById('email') as HTMLInputElement).value;
-      const height = parseInt((document.getElementById('height') as HTMLInputElement).value);
-      const weight = parseInt((document.getElementById('weight') as HTMLInputElement).value);
-      const goals = (document.getElementById('goals') as HTMLInputElement).value;
-
-      // Image File Handling
-      const imageInput = document.getElementById('imageUpload') as HTMLInputElement;
-      let image = '/default-avatar.jpg'; // Default image
-      if (imageInput?.files?.length) {
-        const file = imageInput.files[0];
-        // Read image as base64
-        const reader = new FileReader();
-        reader.onload = () => {
-          image = reader.result as string;
-          // Update the avatar preview dynamically
-          const avatarPreview = document.getElementById('avatarPreview') as HTMLImageElement;
-          avatarPreview.src = image;
-        };
-        reader.readAsDataURL(file);
-      }
-
-      // Validation check
+      const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
+      const fullName = val("au-name");
+      const email = val("au-email");
+      const height = parseInt(val("au-height"), 10);
+      const weight = parseInt(val("au-weight"), 10);
+      const goals = val("au-goals");
       if (!fullName || !email || !height || !weight || !goals) {
-        Swal.showValidationMessage('Please fill in all fields');
+        Swal.showValidationMessage("Please fill in name, email, height, weight and goal");
         return false;
       }
-
-      const newCard: ICard = {
-        id: "C" + Math.floor(Math.random() * 1000000),
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        Swal.showValidationMessage("Please enter a valid email");
+        return false;
+      }
+      const preview = document.getElementById("au-preview") as HTMLImageElement;
+      const membershipType = val("au-type") as ICard["membershipType"];
+      const now = new Date().toISOString();
+      const card: ICard = {
+        id: "C" + Date.now().toString().slice(-6),
         owner: fullName,
-        image: image, // Store the image URL or base64 string
-        remainingAccesses: 10,
-        status: 'active',
-        lastUsed: new Date().toISOString(),
-        fullName: fullName,
-        gender: 'male', // default value
-        birthDate: '1990-01-01',
-        email: email,
-        phone: '+994500000000', // default phone number
-        membershipType: 'Year',
-        startDate: '2025-04-01',
-        endDate: '2026-04-01',
-        lastVisit: new Date().toISOString(),
-        height: height,
-        weight: weight,
-        goals: goals,
-        coach: 'Coach Name',
+        fullName,
+        image: preview.dataset.changed ? preview.src : "",
+        remainingAccesses: membershipType === "Year" ? 30 : 10,
+        status: "active",
+        lastUsed: now,
+        lastVisit: now,
+        gender: val("au-gender") as ICard["gender"],
+        birthDate: "",
+        email,
+        phone: val("au-phone"),
+        membershipType,
+        startDate: daysAgo(0),
+        endDate: daysAgo(membershipType === "Year" ? -365 : -30),
+        height,
+        weight,
+        goals,
+        coach: val("au-coach"),
         checkInHistory: [],
-        notes: '',
+        notes: "",
         isBlacklisted: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       };
-
-      // Add the new user to the cards state
-      setCards([...cards, newCard]);
+      return card;
     },
-    customClass: {
-      popup: darkMode ? 'swal-dark' : '',
-    },
-    confirmButtonText: 'Add User',
-    showCancelButton: true,
-    cancelButtonText: 'Cancel',
   });
+
+  if (result.isConfirmed && result.value) {
+    const { cards, setCards } = useDataStore.getState();
+    setCards([...cards, result.value]);
+  }
 };

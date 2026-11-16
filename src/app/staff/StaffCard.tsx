@@ -1,27 +1,23 @@
-import React from 'react'
-import Image from 'next/image';
-import Link from 'next/link';
-import { IStaff } from '../../../Interface/staff';
+import React from "react";
+import Link from "next/link";
+import { IStaff } from "../../../Interface/staff";
+import Avatar from "../../Components/Avatar";
 
-const StaffCard = ({ id, image, FName, Lname, jobType }: IStaff) => {
-  return (
-    <div key={id} className="relative p-4 border border-amber-700 rounded-lg shadow-lg">
-            {/* staff carda vuranda ozu detaile */}
-            <Link href={`/staff/${id}`} className="absolute inset-0"></Link>
-            
-            <Image
-              src={image}
-              alt={`${FName} ${Lname}`}
-              className="w-24 h-24 object-cover mx-auto"
-              width={96}
-              height={96}
-            />
-            <div className="text-center mt-4">
-              <h3 className="text-lg font-semibold">{FName} {Lname}</h3>
-              <p className="text-gray-600 font-semibold">Job: {jobType}</p>
-            </div>
-          </div>
-  )
-}
+const StaffCard = ({ id, image, FName, Lname, jobType, darkMode }: IStaff & { darkMode: boolean }) => (
+  <li>
+    <Link
+      href={`/staff/${id}`}
+      className={`flex h-full flex-col items-center rounded-xl border p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+        darkMode ? "border-gray-700 bg-gray-800" : "border-amber-200 bg-yellow-50"
+      }`}
+    >
+      <Avatar src={image} name={`${FName} ${Lname}`} className="h-24 w-24 rounded-full text-2xl" />
+      <h2 className="mt-3 text-lg font-semibold">
+        {FName} {Lname}
+      </h2>
+      <p className={darkMode ? "text-gray-400" : "text-amber-800"}>{jobType}</p>
+    </Link>
+  </li>
+);
 
-export default StaffCard
+export default StaffCard;

@@ -1,49 +1,43 @@
-'use client';
-import React from 'react';
-import useSidebarStore from '../../../Store/SidebarStore';
-import CardItem from './Carditem'; // Card komponenti
-import { cardData } from '../../../Mock/cards'; // Mock data
+"use client";
+import React from "react";
+import useSidebarStore from "../../../Store/SidebarStore";
+import useDataStore from "../../../Store/DataStore";
+import CardItem from "./Carditem";
+import PageHeader from "../../Components/PageHeader";
 
 const Cards = () => {
-  const { darkMode,searchTerm, setSearchTerm  } = useSidebarStore();
- 
-  //search filter
-  const filteredCards = cardData.filter((card) =>
-    card.owner.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { darkMode, searchTerm, setSearchTerm } = useSidebarStore();
+  const { cards, ready } = useDataStore();
+
+  const q = searchTerm.trim().toLowerCase();
+  const filteredCards = cards.filter((card) => card.owner.toLowerCase().includes(q) || card.id.toLowerCase().includes(q));
 
   return (
     <div>
-      <div
-        className={`flex flex-col md:flex-row md:justify-between gap-4 ${
-          darkMode ? 'bg-black text-white' : 'bg-yellow-50 text-black'
-        } p-5 border border-b-amber-700 font-bold text-xl sticky top-0 z-10`}
-      >
-        <h2 className="text-2xl">Cards</h2>
+      <PageHeader title="Membership cards">
+        <label className="sr-only" htmlFor="card-search">
+          Search cards
+        </label>
         <input
-          type="text"
-          placeholder="Search..."
+          id="card-search"
+          type="search"
+          placeholder="Search by name or card ID…"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border p-2 rounded"
+          className={`w-full rounded-lg border px-3 py-2 sm:w-72 ${darkMode ? "border-gray-600 bg-gray-800" : "border-amber-300 bg-white"}`}
         />
-      </div>
+      </PageHeader>
 
-      <div
-        className={`p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 ${
-          darkMode ? 'bg-gray-900' : 'bg-gray-50'
-        }`}
-      >
-        {filteredCards.length > 0 ? (
-          filteredCards.map((card, index) => (
-            <CardItem key={index} {...card} darkMode={darkMode} />
-          ))
-        ) : (
-          <div className="col-span-full text-center text-gray-500 text-lg font-medium">
+      <ul className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
+        {filteredCards.map((card) => (
+          <CardItem key={card.id} {...card} darkMode={darkMode} />
+        ))}
+        {ready && filteredCards.length === 0 && (
+          <li className="col-span-full text-center text-lg text-gray-500">
             No cards found for &quot;<strong>{searchTerm}</strong>&quot;
-          </div>
+          </li>
         )}
-      </div>
+      </ul>
     </div>
   );
 };
