@@ -1,99 +1,91 @@
 import Swal from "sweetalert2";
-import { ICard } from '../../../../Interface/card';
+import { ICard } from "../../../../Interface/card";
+import useDataStore from "../../../../Store/DataStore";
+import { bindAvatarInput, DEFAULT_AVATAR, esc } from "../../../../lib/utils";
+import { swalTheme, fieldStyle, labelStyle } from "./theme";
 
-export const showEditUserModal = (
-  card: ICard,
-  setCards: (cards: ICard[]) => void,
-  cards: ICard[],
-  darkMode: boolean
-) => {
-  Swal.fire({
-    title: `<span style="font-size: 1.5rem; font-weight: bold;">Edit ${card.fullName}</span>`,
+export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
+  const f = fieldStyle(darkMode);
+  const input = (label: string, id: string, value: string | number, type = "text") =>
+    `<label style="${labelStyle}">${label}<input id="eu-${id}" type="${type}" value="${esc(value)}" style="${f}"></label>`;
+  const select = (label: string, id: string, value: string, options: [string, string][]) =>
+    `<label style="${labelStyle}">${label}<select id="eu-${id}" style="${f}">${options
+      .map(([v, t]) => `<option value="${v}" ${v === value ? "selected" : ""}>${t}</option>`)
+      .join("")}</select></label>`;
+
+  const result = await Swal.fire<ICard>({
+    title: `Edit ${esc(card.fullName)}`,
+    width: "40rem",
+    ...swalTheme(darkMode),
+    showCancelButton: true,
+    confirmButtonText: "Save changes",
+    focusConfirm: false,
     html: `
-      <div style="display: grid; gap: 10px; text-align: left;">
-      <div style="text-align: center; margin-left:85px ">
-          <label for="imageUpload" style="display: block; cursor: pointer;">
-            <img 
-              id="avatarPreview" 
-              src="/default-avatar.jpg" 
-              alt="Add photo" 
-              style="width: 120px; height: 120px; object-fit: cover; border: 2px solid #ccc; margin-left: 120px;" 
-            />
-          </label>
-          <input 
-            type="file" 
-            id="imageUpload" 
-            accept="image/*" 
-            class="swal2-input swal-form-input" 
-            style="display: none;" 
-          />
-        </div>
-        ${inputField('Owner', 'owner', card.owner, 'text')}
-        ${inputField('Full Name', 'fullName', card.fullName, 'text')}
-        ${inputField('Email', 'email', card.email, 'email')}
-        ${inputField('Phone', 'phone', card.phone, 'text')}
-        ${selectField('Gender', 'gender', card.gender)}
-        ${inputField('Birth Date', 'birthDate', card.birthDate, 'date')}
-        ${inputField('Membership Type', 'membershipType', card.membershipType, 'text')}
-        ${inputField('Start Date', 'startDate', card.startDate, 'date')}
-        ${inputField('End Date', 'endDate', card.endDate, 'date')}
-        ${inputField('Height (cm)', 'height', card.height, 'number')}
-        ${inputField('Weight (kg)', 'weight', card.weight, 'number')}
-        ${inputField('Goals', 'goals', card.goals, 'text')}
-        ${inputField('Coach', 'coach', card.coach, 'text')}
-        <label for="notes"><strong>Notes:</strong></label>
-        <textarea id="notes" class="swal2-textarea ${darkMode ? 'swal-dark-input' : ''}">${card.notes}</textarea>
-        <label style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-          <input type="checkbox" id="isBlacklisted" ${card.isBlacklisted ? 'checked' : ''}> <strong>Blacklisted</strong>
+      <div style="display:grid;gap:.75rem">
+        <label for="eu-image" style="cursor:pointer;justify-self:center;text-align:center;font-size:.85rem">
+          <img id="eu-preview" src="${esc(card.image || DEFAULT_AVATAR)}" alt="Photo preview"
+            style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;display:block;margin:0 auto .3rem" />
+          Change photo
         </label>
-      </div>
-    `,
+        <input id="eu-image" type="file" accept="image/*" style="display:none" />
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.75rem">
+          ${input("Full name", "fullName", card.fullName)}
+          ${input("Email", "email", card.email, "email")}
+          ${input("Phone", "phone", card.phone, "tel")}
+          ${select("Gender", "gender", card.gender, [["female", "Female"], ["male", "Male"]])}
+          ${input("Birth date", "birthDate", card.birthDate, "date")}
+          ${select("Status", "status", card.status, [["active", "Active"], ["passive", "Passive"], ["expired", "Expired"]])}
+          ${select("Membership", "membershipType", card.membershipType, [["Monthly", "Monthly"], ["Year", "Year"]])}
+          ${input("Remaining visits", "remainingAccesses", card.remainingAccesses, "number")}
+          ${input("Start date", "startDate", card.startDate, "date")}
+          ${input("End date", "endDate", card.endDate, "date")}
+          ${input("Height (cm)", "height", card.height, "number")}
+          ${input("Weight (kg)", "weight", card.weight, "number")}
+          ${input("Goal", "goals", card.goals)}
+          ${input("Coach", "coach", card.coach)}
+        </div>
+        <label style="${labelStyle}">Notes<textarea id="eu-notes" rows="3" style="${f}">${esc(card.notes)}</textarea></label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-weight:600">
+          <input type="checkbox" id="eu-isBlacklisted" ${card.isBlacklisted ? "checked" : ""}> Blacklisted
+        </label>
+      </div>`,
+    didOpen: () => bindAvatarInput("eu-image", "eu-preview"),
     preConfirm: () => {
-      const updatedCard: ICard = {
+      const val = (id: string) => (document.getElementById(`eu-${id}`) as HTMLInputElement).value.trim();
+      const fullName = val("fullName");
+      if (!fullName || !val("email")) {
+        Swal.showValidationMessage("Name and email are required");
+        return false;
+      }
+      const preview = document.getElementById("eu-preview") as HTMLImageElement;
+      const updated: ICard = {
         ...card,
-        owner: (document.getElementById("owner") as HTMLInputElement).value,
-        fullName: (document.getElementById("fullName") as HTMLInputElement).value,
-        email: (document.getElementById("email") as HTMLInputElement).value,
-        phone: (document.getElementById("phone") as HTMLInputElement).value,
-        gender: (document.getElementById("gender") as HTMLSelectElement).value as ICard['gender'],
-        birthDate: (document.getElementById("birthDate") as HTMLInputElement).value,
-        membershipType: (document.getElementById("membershipType") as HTMLInputElement).value as ICard['membershipType'],
-        startDate: (document.getElementById("startDate") as HTMLInputElement).value,
-        endDate: (document.getElementById("endDate") as HTMLInputElement).value,
-        height: parseInt((document.getElementById("height") as HTMLInputElement).value),
-        weight: parseInt((document.getElementById("weight") as HTMLInputElement).value),
-        goals: (document.getElementById("goals") as HTMLInputElement).value,
-        coach: (document.getElementById("coach") as HTMLInputElement).value,
-        notes: (document.getElementById("notes") as HTMLTextAreaElement).value,
-        isBlacklisted: (document.getElementById("isBlacklisted") as HTMLInputElement).checked,
+        owner: fullName,
+        fullName,
+        image: preview.dataset.changed ? preview.src : card.image,
+        email: val("email"),
+        phone: val("phone"),
+        gender: val("gender") as ICard["gender"],
+        birthDate: val("birthDate"),
+        status: val("status") as ICard["status"],
+        membershipType: val("membershipType") as ICard["membershipType"],
+        remainingAccesses: Math.max(0, parseInt(val("remainingAccesses"), 10) || 0),
+        startDate: val("startDate"),
+        endDate: val("endDate"),
+        height: parseInt(val("height"), 10) || card.height,
+        weight: parseInt(val("weight"), 10) || card.weight,
+        goals: val("goals"),
+        coach: val("coach"),
+        notes: (document.getElementById("eu-notes") as HTMLTextAreaElement).value,
+        isBlacklisted: (document.getElementById("eu-isBlacklisted") as HTMLInputElement).checked,
         updatedAt: new Date().toISOString(),
       };
-      setCards(cards.map((c) => (c.id === card.id ? updatedCard : c)));
+      return updated;
     },
-    customClass: {
-      popup: darkMode ? 'swal-dark' : '',
-    },
-    confirmButtonText: 'Save Changes',
-    showCancelButton: true,
-    cancelButtonText: 'Cancel',
   });
-};
 
-// Reusable input generator
-const inputField = (label: string, id: string, value: string | number, type: string) => {
-  return `
-    <label for="${id}"><strong>${label}:</strong></label>
-    <input type="${type}" id="${id}" value="${value}" class="swal2-input ${type === 'date' ? 'swal2-date' : ''} ${type === 'number' ? 'swal2-number' : ''}" />
-  `;
-};
-
-// Gender select input
-const selectField = (label: string, id: string, selected: string) => {
-  return `
-    <label for="${id}"><strong>${label}:</strong></label>
-    <select id="${id}" class="swal2-input">
-      <option value="male" ${selected === 'male' ? 'selected' : ''}>Male</option>
-      <option value="female" ${selected === 'female' ? 'selected' : ''}>Female</option>
-    </select>
-  `;
+  if (result.isConfirmed && result.value) {
+    const { cards, setCards } = useDataStore.getState();
+    setCards(cards.map((c) => (c.id === card.id ? result.value! : c)));
+  }
 };

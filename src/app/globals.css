@@ -1,37 +1,10 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+html {
+  scroll-behavior: smooth;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* SweetAlert2 popups should never be wider than a phone screen. */
+.swal2-popup {
+  max-width: calc(100vw - 1rem);
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-  /* Dark mod için renkler */
-  .dark body {
-    background-color: #000000;
-    color: #ffffff;
-  }
-  .swal-dark {
-    background-color: #1f2937 !important; /* Tailwind dark gray */
-    color: #f9fafb !important;
-  }
-  
-  .swal-dark-input {
-    background-color: #374151 !important;
-    color: #f9fafb !important;
-    border: 1px solid #4b5563;
-  }
-  

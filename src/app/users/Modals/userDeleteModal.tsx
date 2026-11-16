@@ -1,33 +1,20 @@
 import Swal from "sweetalert2";
-import { ICard } from '../../../../Interface/card';
+import useDataStore from "../../../../Store/DataStore";
+import { swalTheme } from "./theme";
 
-export const showDeleteUserModal = (
-  id: string,
-  setCards: (cards: ICard[]) => void,
-  cards: ICard[],
-  darkMode: boolean
-) => {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'This user will be permanently deleted.',
-    icon: 'warning',
+export const showDeleteUserModal = async (id: string, darkMode: boolean) => {
+  const result = await Swal.fire({
+    title: "Delete this member?",
+    text: "The member and their card will be removed.",
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'No, cancel!',
-    customClass: {
-      popup: darkMode ? 'swal-dark' : '',
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      setCards(cards.filter((card) => card.id !== id));
-      Swal.fire({
-        title: 'Deleted!',
-        text: 'The user has been deleted.',
-        icon: 'success',
-        customClass: {
-          popup: darkMode ? 'swal-dark' : '',
-        },
-      });
-    }
+    confirmButtonText: "Yes, delete",
+    cancelButtonText: "Cancel",
+    ...swalTheme(darkMode),
+    confirmButtonColor: "#dc2626",
   });
+  if (!result.isConfirmed) return;
+  const { cards, setCards } = useDataStore.getState();
+  setCards(cards.filter((card) => card.id !== id));
+  Swal.fire({ title: "Deleted", icon: "success", timer: 1400, showConfirmButton: false, ...swalTheme(darkMode) });
 };
