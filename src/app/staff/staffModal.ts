@@ -80,9 +80,10 @@ export const showStaffForm = async (darkMode: boolean, member?: IStaff): Promise
   return result.isConfirmed && result.value ? result.value : null;
 };
 
+/** Success toast. Uses `titleText` (plain text, never parsed as HTML) because callers pass user-entered names. */
 export const toast = (title: string, darkMode: boolean) =>
   Swal.fire({
-    title,
+    titleText: title,
     icon: "success",
     timer: 1600,
     showConfirmButton: false,
