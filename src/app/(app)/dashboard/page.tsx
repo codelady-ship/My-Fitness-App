@@ -143,11 +143,13 @@ const Dashboard = () => {
   const last = history[history.length - 1]?.bpm ?? metrics.restingBpm;
   const doneCount = plan.filter((p) => p.done).length;
   const firstName = session?.user.name.split(" ")[0];
+  // Members only see their own heart data; gym admin widgets are for coaches/admins (and demo visitors).
+  const showAdmin = !session || session.user.role !== "member";
 
   return (
     <div>
       <PageHeader title={firstName ? `Hi, ${firstName}` : "Overview"}>
-        {dataSource === "demo" && (
+        {dataSource === "demo" && showAdmin && (
           <button type="button" onClick={onReset} className="btn btn-ghost btn-sm">
             Reset demo data
           </button>
@@ -232,7 +234,11 @@ const Dashboard = () => {
         </section>
 
         {/* ---- daily plan ---- */}
-        <section className="glass panel span-5 pop" style={{ ["--pop-delay" as string]: "0.18s" }} aria-labelledby="plan-title">
+        <section
+          className={`glass panel ${showAdmin ? "span-5" : "span-12"} pop`}
+          style={{ ["--pop-delay" as string]: "0.18s" }}
+          aria-labelledby="plan-title"
+        >
           <div className="card-head">
             <h2 id="plan-title">Today&apos;s plan</h2>
             <span className="badge">
@@ -299,60 +305,71 @@ const Dashboard = () => {
           )}
         </section>
 
-        {/* ---- gym overview ---- */}
-        <section
-          className="span-7"
-          aria-labelledby="gym-title"
-          style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignContent: "start" }}
-        >
-          <h2 id="gym-title" className="sr-only">
-            Gym overview
-          </h2>
-          {stats.map((s, i) => (
-            <div key={s.label} className="glass panel stat lift pop" style={{ ["--pop-delay" as string]: `${0.22 + i * 0.05}s` }}>
-              <span className="label">{s.label}</span>
-              <span className="value">{ready ? s.value : "–"}</span>
-            </div>
-          ))}
-        </section>
+        {/* ---- gym overview: coaches, admins and demo visitors only ---- */}
+        {showAdmin && (
+          <>
+            <section
+              className="span-7"
+              aria-labelledby="gym-title"
+              style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignContent: "start" }}
+            >
+              <h2 id="gym-title" className="sr-only">
+                Gym overview
+              </h2>
+              {stats.map((s, i) => (
+                <div key={s.label} className="glass panel stat lift pop" style={{ ["--pop-delay" as string]: `${0.22 + i * 0.05}s` }}>
+                  <span className="label">{s.label}</span>
+                  <span className="value">{ready ? s.value : "–"}</span>
+                </div>
+              ))}
+            </section>
 
-        <section className="glass panel span-12 pop" style={{ ["--pop-delay" as string]: "0.4s" }} aria-labelledby="visits-title">
-          <div className="card-head" style={{ flexWrap: "wrap" }}>
-            <h2 id="visits-title">Remaining visits per member</h2>
-            <span className="muted" style={{ fontSize: 13, display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <span className="status status-active">active</span>
-              <span className="status status-passive">passive</span>
-              <span className="status status-expired">expired</span>
-            </span>
-          </div>
-          <div className="relative h-80 w-full" style={{ marginTop: 12 }}>
-            {ready && (
-              <Bar
-                data={chartData}
-                aria-label="Bar chart of remaining visits per member, coloured by card status"
-                role="img"
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: "#16213a", padding: 10, cornerRadius: 12, displayColors: false },
-                  },
-                  scales: {
-                    x: { ticks: { color: text, font: { family: "Inter" } }, grid: { display: false } },
-                    y: {
-                      beginAtZero: true,
-                      ticks: { color: text, precision: 0 },
-                      grid: { color: grid },
-                      border: { display: false },
-                      title: { display: true, text: "Remaining visits", color: text },
-                    },
-                  },
-                }}
-              />
-            )}
-          </div>
-        </section>
+            <section className="glass panel span-12 pop" style={{ ["--pop-delay" as string]: "0.4s" }} aria-labelledby="visits-title">
+              <div className="card-head" style={{ flexWrap: "wrap" }}>
+                <h2 id="visits-title">
+                  Remaining visits per member{" "}
+                  {dataSource === "demo" && (
+                    <span className="badge" style={{ marginLeft: 6 }}>
+                      Demo gym data
+                    </span>
+                  )}
+                </h2>
+                <span className="muted" style={{ fontSize: 13, display: "flex", gap: 14, flexWrap: "wrap" }}>
+                  <span className="status status-active">active</span>
+                  <span className="status status-passive">passive</span>
+                  <span className="status status-expired">expired</span>
+                </span>
+              </div>
+              <div className="relative h-80 w-full" style={{ marginTop: 12 }}>
+                {ready && (
+                  <Bar
+                    data={chartData}
+                    aria-label="Bar chart of remaining visits per member, coloured by card status"
+                    role="img"
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: "#16213a", padding: 10, cornerRadius: 12, displayColors: false },
+                      },
+                      scales: {
+                        x: { ticks: { color: text, font: { family: "Inter" } }, grid: { display: false } },
+                        y: {
+                          beginAtZero: true,
+                          ticks: { color: text, precision: 0 },
+                          grid: { color: grid },
+                          border: { display: false },
+                          title: { display: true, text: "Remaining visits", color: text },
+                        },
+                      },
+                    }}
+                  />
+                )}
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );

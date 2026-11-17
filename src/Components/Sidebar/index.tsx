@@ -42,13 +42,18 @@ const Sidebar = () => {
               {React.createElement(links[0].icon, { "aria-hidden": true })}
               {links[0].title}
             </Link>
-            <span className="group-label">Gym admin</span>
-            {links.slice(1).map(({ id, title, to, icon }) => (
-              <Link key={id} href={to} aria-current={isActive(to) ? "page" : undefined}>
-                {React.createElement(icon, { "aria-hidden": true })}
-                {title}
-              </Link>
-            ))}
+            {/* Gym admin is for coaches/admins; demo visitors (no session) can try it with demo data. */}
+            {session?.user.role !== "member" && (
+              <>
+                <span className="group-label">Gym admin</span>
+                {links.slice(1).map(({ id, title, to, icon }) => (
+                  <Link key={id} href={to} aria-current={isActive(to) ? "page" : undefined}>
+                    {React.createElement(icon, { "aria-hidden": true })}
+                    {title}
+                  </Link>
+                ))}
+              </>
+            )}
           </nav>
 
           <div className="app-nav" style={{ marginTop: "auto" }}>

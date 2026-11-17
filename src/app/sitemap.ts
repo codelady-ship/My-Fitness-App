@@ -9,7 +9,6 @@ const ROUTES: [string, number][] = [
   ["/contact", 0.6],
   ["/register", 0.5],
   ["/login", 0.3],
-  ["/dashboard", 0.4],
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

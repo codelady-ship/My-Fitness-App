@@ -11,20 +11,15 @@ const Staff = () => {
   const { staff, ready, addStaff } = useDataStore();
 
   const addMember = async () => {
-    const member = await showStaffForm(darkMode);
+    const member = await showStaffForm(darkMode, undefined, addStaff);
     if (!member) return;
-    addStaff(member);
     toast(`${member.FName} ${member.Lname} was added`, darkMode);
   };
 
   return (
     <div>
       <PageHeader title="Staff">
-        <button
-          type="button"
-          className="btn btn-coral btn-sm"
-          onClick={addMember}
-        >
+        <button type="button" className="btn btn-coral btn-sm" onClick={addMember}>
           + Add staff member
         </button>
       </PageHeader>

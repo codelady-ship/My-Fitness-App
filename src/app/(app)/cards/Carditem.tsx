@@ -3,19 +3,9 @@ import { ICard } from "@/Interface/card";
 import Avatar from "@/src/Components/Avatar";
 import { formatDate } from "@/lib/utils";
 
-
 const statusLabel: Record<ICard["status"], string> = { active: "Active", expired: "Expired", passive: "Passive" };
 
-const CardItem = ({
-  owner,
-  image,
-  id,
-  remainingAccesses,
-  status,
-  lastVisit,
-  membershipType,
-  endDate,
-}: ICard & { darkMode?: boolean }) => {
+const CardItem = ({ owner, image, id, remainingAccesses, status, lastVisit, membershipType, endDate }: ICard & { darkMode?: boolean }) => {
   const sub = "muted";
   return (
     <li className="glass-solid lift p-5">

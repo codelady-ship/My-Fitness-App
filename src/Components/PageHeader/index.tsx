@@ -12,7 +12,13 @@ const PageHeader = ({ title, children }: { title: string; children?: React.React
   return (
     <header className="app-top glass">
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <button type="button" className="icon-btn mobile-only" onClick={() => setMobileOpen(true)} aria-label="Open menu" aria-controls="sidebar">
+        <button
+          type="button"
+          className="icon-btn mobile-only"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          aria-controls="sidebar"
+        >
           <FiMenu />
         </button>
         <h1>{title}</h1>
@@ -25,7 +31,9 @@ const PageHeader = ({ title, children }: { title: string; children?: React.React
           </span>
           <span className="who">
             <b>{name}</b>
-            <span className="muted">{session ? (session.user.role === "admin" ? "Admin" : "Member") + (session.demo ? " · demo" : "") : "Demo mode"}</span>
+            <span className="muted">
+              {session ? (session.user.role === "admin" ? "Admin" : "Member") + (session.demo ? " · demo" : "") : "Demo mode"}
+            </span>
           </span>
         </div>
       </div>

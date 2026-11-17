@@ -7,7 +7,7 @@ import { IoMdMale, IoMdFemale } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import useSidebarStore from "@/Store/SidebarStore";
-import useDataStore from "@/Store/DataStore";
+import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import PageHeader from "@/src/Components/PageHeader";
 import Avatar from "@/src/Components/Avatar";
 import { formatDate } from "@/lib/utils";
@@ -54,17 +54,27 @@ const StaffDetail = () => {
       confirmButtonColor: "#dc2626",
       background: darkMode ? "#111827" : "#fff",
       color: darkMode ? "#f9fafb" : "#111827",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      // Delete on the server first; only leave the page after it succeeded.
+      preConfirm: async () => {
+        try {
+          await removeStaff(member.id);
+          return true;
+        } catch (err) {
+          Swal.showValidationMessage(writeErrorMessage(err));
+          return false;
+        }
+      },
     });
     if (!r.isConfirmed) return;
     router.push("/staff");
-    removeStaff(member.id);
     toast(`${fullName} was deleted`, darkMode);
   };
 
   const handleEdit = async () => {
-    const updated = await showStaffForm(darkMode, member);
+    const updated = await showStaffForm(darkMode, member, updateStaff);
     if (!updated) return;
-    updateStaff(updated);
     toast("Changes saved", darkMode);
   };
 
@@ -74,18 +84,10 @@ const StaffDetail = () => {
     <div>
       <PageHeader title="Staff member">
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleEdit}
-            className="btn btn-ghost btn-sm"
-          >
+          <button type="button" onClick={handleEdit} className="btn btn-ghost btn-sm">
             <CiEdit className="text-xl" /> Edit
           </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="btn btn-ghost btn-sm" style={{ color: "#b8321e" }}
-          >
+          <button type="button" onClick={handleDelete} className="btn btn-ghost btn-sm" style={{ color: "#b8321e" }}>
             <MdDeleteOutline className="text-xl" /> Delete
           </button>
         </div>
@@ -95,9 +97,7 @@ const StaffDetail = () => {
         <Link href="/staff" className="mb-4 inline-block text-sm font-semibold text-[var(--coral-ink)] hover:underline">
           ← All staff
         </Link>
-        <div
-          className="glass-solid mx-auto flex max-w-3xl flex-col items-center gap-6 p-6 sm:flex-row sm:items-start"
-        >
+        <div className="glass-solid mx-auto flex max-w-3xl flex-col items-center gap-6 p-6 sm:flex-row sm:items-start">
           <Avatar src={image} name={fullName} className="h-40 w-40 rounded-3xl text-4xl" />
           <div className="min-w-0 flex-1">
             <h2 className="flex items-center gap-2 text-2xl font-semibold sm:text-3xl">

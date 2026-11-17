@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ApiError, login, register } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { ApiError, DEMO_MODE, login, register } from "@/lib/api";
 import { HeartIcon } from "./Icons";
 
 type Mode = "login" | "register";
@@ -12,6 +12,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("expired")) setError("Your session has expired. Please log in again.");
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -102,10 +106,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           </>
         )}
       </p>
-      <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.5 }}>
-        If the server is offline you get a demo session in this browser. Tip: an email starting with <code>admin@</code> opens the admin
-        view in demo mode.
-      </p>
+      {DEMO_MODE && (
+        <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.5 }}>
+          Demo mode: no server is connected, so any email and password start a demo session in this browser. An email starting with{" "}
+          <code>admin@</code> opens the admin view.
+        </p>
+      )}
     </form>
   );
 }

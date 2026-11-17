@@ -2,7 +2,7 @@
  * Typed Pulsa API, following docs/API.md (contract v1) on `feature/pulsa-backend`.
  * The `map*` helpers are the only place that knows the server's JSON shape.
  */
-import { ApiError, ApiUnavailable, readRefreshToken, request, sessionStorageKey, withFallback } from "./client";
+import { API_URL, ApiError, ApiUnavailable, readRefreshToken, request, sessionStorageKey, withFallback } from "./client";
 import { makeSeedMetrics, makeSeedPlan, seedCoaches, seedPlans, seedPrograms, seedPublicStats } from "./seed";
 import type {
   Coach,
@@ -23,6 +23,9 @@ import { staffData } from "@/Mock/staff";
 
 export * from "./types";
 export { ApiError, ApiUnavailable, API_URL } from "./client";
+
+/** True when no API is configured: the whole site runs on bundled demo data. */
+export const DEMO_MODE = !API_URL;
 
 type Raw = Record<string, unknown>;
 const str = (v: unknown, d = "") => (v === undefined || v === null ? d : String(v));
@@ -243,7 +246,13 @@ export const loadSession = (): Session | null => {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(sessionStorageKey);
-    return raw ? (JSON.parse(raw) as Session) : null;
+    const s = raw ? (JSON.parse(raw) as Session) : null;
+    // A demo session left over from demo mode is not valid once a real API is configured.
+    if (s?.demo && !DEMO_MODE) {
+      localStorage.removeItem(sessionStorageKey);
+      return null;
+    }
+    return s;
   } catch {
     return null;
   }
@@ -267,7 +276,12 @@ const toSession = (raw: unknown): StoredSession => {
   return { token, refreshToken: str(r.refreshToken) || undefined, user: mapUser((r.user ?? {}) as Raw), demo: false };
 };
 
-/** Demo session when the API is down: lets visitors explore the dashboard. "admin@…" gets the admin role. */
+const WAKING_UP = "The server is waking up. Please try again in a minute.";
+
+/**
+ * Demo session, ONLY in demo mode (no NEXT_PUBLIC_API_URL): lets visitors explore the dashboard.
+ * "admin@…" gets the admin role. With a real API configured, an unreachable server never creates a session.
+ */
 const demoSession = (email: string, name?: string): Session => ({
   token: "demo",
   demo: true,
@@ -278,7 +292,10 @@ export async function login(email: string, password: string): Promise<Session> {
   try {
     return saveSession(toSession(await request("/auth/login", { method: "POST", body: { email, password }, auth: false })));
   } catch (err) {
-    if (err instanceof ApiUnavailable) return saveSession(demoSession(email));
+    if (err instanceof ApiUnavailable) {
+      if (DEMO_MODE) return saveSession(demoSession(email));
+      throw new ApiError(WAKING_UP, 503);
+    }
     if (err instanceof ApiError && err.status === 401) throw new ApiError("Wrong email or password.", 401, err.code);
     throw err;
   }
@@ -288,7 +305,10 @@ export async function register(name: string, email: string, password: string): P
   try {
     return saveSession(toSession(await request("/auth/register", { method: "POST", body: { name, email, password }, auth: false })));
   } catch (err) {
-    if (err instanceof ApiUnavailable) return saveSession(demoSession(email, name));
+    if (err instanceof ApiUnavailable) {
+      if (DEMO_MODE) return saveSession(demoSession(email, name));
+      throw new ApiError(WAKING_UP, 503);
+    }
     if (err instanceof ApiError && err.status === 409)
       throw new ApiError("An account with this email already exists. Try logging in.", 409, err.code);
     throw err;

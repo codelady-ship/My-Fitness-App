@@ -22,9 +22,9 @@ when the API is not configured, asleep or down, so the live site never breaks.
 | `/coaches` | Coaches from `GET /coaches` |
 | `/pricing` | Plans from `GET /pricing-plans`, monthly/yearly toggle, FAQ |
 | `/contact` | Validated form → `POST /contact` (saved in the browser if the API is down) |
-| `/login`, `/register` | `POST /auth/login`, `/auth/register` (JWT + refresh token); demo session if the API is down |
+| `/login`, `/register` | `POST /auth/login`, `/auth/register` (JWT + refresh token, session cleared if the refresh token is rejected). With an API configured but asleep: "server is waking up, try again", no session is created. Demo sessions exist only in demo mode |
 | `/dashboard` | Resting-HR gauge and 14-day trend (`/metrics/summary`, `/metrics/days`), today's adaptive plan (`/plan/today`), gym stats, remaining-visits chart |
-| `/users`, `/cards`, `/staff`, `/staff/[id]` | Gym admin: members, membership cards, staff (CRUD through `/members`, `/staff` for coach/admin accounts, otherwise localStorage) |
+| `/users`, `/cards`, `/staff`, `/staff/[id]` | Gym admin: members, membership cards, staff. Coach/admin accounts work on the API: every write waits for the server and shows its error (403, validation) instead of pretending. API data is kept in memory only and replaced by demo data on logout. Without an admin session the pages use a demo copy saved in localStorage. Members do not see gym admin |
 
 ## Design
 
@@ -44,7 +44,9 @@ when the API is not configured, asleep or down, so the live site never breaks.
 
 Every request has an 8 s timeout. Network errors, timeouts and 5xx answers switch that view to demo data (and skip the API for 30 s); 4xx errors such as a wrong password are shown to the user.
 
-Demo mode tip: with the API off, any email logs in; an email starting with `admin@` gets the admin role.
+Demo mode (`NEXT_PUBLIC_API_URL` empty): any email logs in as a demo session; an email starting with `admin@` gets the admin role. When the variable is set, demo sessions are never created.
+
+Security headers: a Content Security Policy (`connect-src` limited to this site and the API origin), `nosniff`, `frame-ancestors 'none'`, a strict referrer policy and a permissions policy are set in `next.config.ts`.
 
 ## Run locally
 
@@ -67,7 +69,7 @@ src/app/(site)/ landing, programs, coaches, pricing, contact, login, register
 src/app/(app)/  dashboard, users (members), cards, staff, staff/[id]
 src/Components/pulsa/  Hero, Gauge, LineChart, BgVideo, SiteNav, PageHero, forms, hooks (count-up, parallax)
 src/styles/pulsa.css   design tokens and components
-Store/          Zustand: DataStore (members + staff, API or localStorage), SidebarStore (UI)
+Store/          Zustand: DataStore (members + staff: API in memory, demo copy in localStorage), SidebarStore (UI)
 Interface/ Mock/       types and demo members/staff
 ```
 

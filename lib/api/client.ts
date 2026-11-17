@@ -63,6 +63,18 @@ export const readRefreshToken = (): string | null => {
   return s && !s.demo ? (s.refreshToken ?? null) : null;
 };
 
+/** Clear the stored session and send the visitor to the login page. */
+function expireSession() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event("pulsa-session"));
+  if (!window.location.pathname.startsWith("/login")) window.location.assign("/login?expired=1");
+}
+
 let refreshing: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
@@ -76,7 +88,11 @@ async function refreshAccessToken(): Promise<boolean> {
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({ refreshToken: stored.refreshToken }),
         });
-        if (!res.ok) return false;
+        if (!res.ok) {
+          // The refresh token was rejected (expired, rotated or revoked): end the session.
+          if (res.status === 400 || res.status === 401 || res.status === 403) expireSession();
+          return false;
+        }
         const json = await res.json();
         const data = json?.data;
         if (!data?.accessToken) return false;

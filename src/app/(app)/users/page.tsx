@@ -50,11 +50,7 @@ const Users = () => {
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={() => showAddUserModal(darkMode)}
-          className="btn btn-coral"
-        >
+        <button type="button" onClick={() => showAddUserModal(darkMode)} className="btn btn-coral">
           + Add member
         </button>
       </div>
@@ -64,10 +60,7 @@ const Users = () => {
       ) : (
         <ul className="list-cards">
           {filteredCards.map((card) => (
-            <li
-              key={card.id}
-              className="glass-solid lift flex gap-4 p-4"
-            >
+            <li key={card.id} className="glass-solid lift flex gap-4 p-4">
               <Avatar src={card.image} name={card.owner} className="h-24 w-24 shrink-0 rounded-2xl text-2xl sm:h-28 sm:w-28" />
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-lg font-bold">{card.owner}</h2>
@@ -84,11 +77,7 @@ const Users = () => {
                 <p className="truncate">
                   <span className={muted}>Coach:</span> {card.coach || "None"}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => showUserCardModal(card, darkMode)}
-                  className="btn btn-ink btn-sm mt-2"
-                >
+                <button type="button" onClick={() => showUserCardModal(card, darkMode)} className="btn btn-ink btn-sm mt-2">
                   Details<span className="sr-only"> for {card.owner}</span>
                 </button>
               </div>

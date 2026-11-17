@@ -2,12 +2,18 @@ import Swal from "sweetalert2";
 import { IStaff } from "@/Interface/staff";
 import { JOB_TYPES } from "@/Mock/staff";
 import { bindAvatarInput, DEFAULT_AVATAR, esc } from "@/lib/utils";
+import { writeErrorMessage } from "@/Store/DataStore";
 
 /**
  * Add / edit form for a staff member in a SweetAlert2 popup.
  * Resolves with the saved member, or null if the popup was cancelled.
  */
-export const showStaffForm = async (darkMode: boolean, member?: IStaff): Promise<IStaff | null> => {
+export const showStaffForm = async (
+  darkMode: boolean,
+  member: IStaff | undefined,
+  /** saves the member (API or demo); runs before the popup closes so errors are shown inside it */
+  save: (data: IStaff) => Promise<IStaff>,
+): Promise<IStaff | null> => {
   const m: Partial<IStaff> = member ?? { gender: "female", jobType: "Trainer" };
   const field = `width:100%;margin:0;box-sizing:border-box;padding:.6rem;border-radius:.5rem;border:1px solid ${
     darkMode ? "#4b5563" : "#d1d5db"
@@ -23,6 +29,8 @@ export const showStaffForm = async (darkMode: boolean, member?: IStaff): Promise
     confirmButtonText: member ? "Save changes" : "Add member",
     confirmButtonColor: "#ff6a55",
     focusConfirm: false,
+    showLoaderOnConfirm: true,
+    allowOutsideClick: () => !Swal.isLoading(),
     html: `
       <div style="display:grid;gap:.75rem">
         <label for="sf-image" style="cursor:pointer;justify-self:center;text-align:center;font-size:.85rem">
@@ -51,7 +59,7 @@ export const showStaffForm = async (darkMode: boolean, member?: IStaff): Promise
         </div>
       </div>`,
     didOpen: () => bindAvatarInput("sf-image", "sf-preview"),
-    preConfirm: () => {
+    preConfirm: async () => {
       const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
       const preview = document.getElementById("sf-preview") as HTMLImageElement;
       const data: IStaff = {
@@ -73,7 +81,12 @@ export const showStaffForm = async (darkMode: boolean, member?: IStaff): Promise
         Swal.showValidationMessage("Please enter a valid email");
         return false;
       }
-      return data;
+      try {
+        return await save(data);
+      } catch (err) {
+        Swal.showValidationMessage(writeErrorMessage(err));
+        return false;
+      }
     },
   });
 

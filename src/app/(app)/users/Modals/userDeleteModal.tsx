@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import useDataStore from "@/Store/DataStore";
+import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import { swalTheme } from "./theme";
 
 export const showDeleteUserModal = async (id: string, darkMode: boolean) => {
@@ -12,8 +12,19 @@ export const showDeleteUserModal = async (id: string, darkMode: boolean) => {
     cancelButtonText: "Cancel",
     ...swalTheme(darkMode),
     confirmButtonColor: "#dc2626",
+    showLoaderOnConfirm: true,
+    allowOutsideClick: () => !Swal.isLoading(),
+    // Delete on the server first; the member only disappears from the list after it succeeds.
+    preConfirm: async () => {
+      try {
+        await useDataStore.getState().removeMember(id);
+        return true;
+      } catch (err) {
+        Swal.showValidationMessage(writeErrorMessage(err));
+        return false;
+      }
+    },
   });
   if (!result.isConfirmed) return;
-  useDataStore.getState().removeMember(id);
   Swal.fire({ title: "Deleted", icon: "success", timer: 1400, showConfirmButton: false, ...swalTheme(darkMode) });
 };

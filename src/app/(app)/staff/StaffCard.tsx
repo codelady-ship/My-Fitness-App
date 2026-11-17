@@ -3,7 +3,7 @@ import Link from "next/link";
 import { IStaff } from "@/Interface/staff";
 import Avatar from "@/src/Components/Avatar";
 
-const StaffCard = ({ id, image, FName, Lname, jobType, }: IStaff & { darkMode?: boolean }) => (
+const StaffCard = ({ id, image, FName, Lname, jobType }: IStaff & { darkMode?: boolean }) => (
   <li>
     <Link
       href={`/staff/${id}`}

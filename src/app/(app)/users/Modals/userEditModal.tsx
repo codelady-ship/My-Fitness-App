@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 import { ICard } from "@/Interface/card";
-import useDataStore from "@/Store/DataStore";
+import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import { bindAvatarInput, DEFAULT_AVATAR, esc } from "@/lib/utils";
 import { swalTheme, fieldStyle, labelStyle } from "./theme";
 
@@ -13,13 +13,15 @@ export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
       .map(([v, t]) => `<option value="${v}" ${v === value ? "selected" : ""}>${t}</option>`)
       .join("")}</select></label>`;
 
-  const result = await Swal.fire<ICard>({
+  await Swal.fire<ICard>({
     title: `Edit ${esc(card.fullName)}`,
     width: "40rem",
     ...swalTheme(darkMode),
     showCancelButton: true,
     confirmButtonText: "Save changes",
     focusConfirm: false,
+    showLoaderOnConfirm: true,
+    allowOutsideClick: () => !Swal.isLoading(),
     html: `
       <div style="display:grid;gap:.75rem">
         <label for="eu-image" style="cursor:pointer;justify-self:center;text-align:center;font-size:.85rem">
@@ -32,10 +34,20 @@ export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
           ${input("Full name", "fullName", card.fullName)}
           ${input("Email", "email", card.email, "email")}
           ${input("Phone", "phone", card.phone, "tel")}
-          ${select("Gender", "gender", card.gender, [["female", "Female"], ["male", "Male"]])}
+          ${select("Gender", "gender", card.gender, [
+            ["female", "Female"],
+            ["male", "Male"],
+          ])}
           ${input("Birth date", "birthDate", card.birthDate, "date")}
-          ${select("Status", "status", card.status, [["active", "Active"], ["passive", "Passive"], ["expired", "Expired"]])}
-          ${select("Membership", "membershipType", card.membershipType, [["Monthly", "Monthly"], ["Year", "Year"]])}
+          ${select("Status", "status", card.status, [
+            ["active", "Active"],
+            ["passive", "Passive"],
+            ["expired", "Expired"],
+          ])}
+          ${select("Membership", "membershipType", card.membershipType, [
+            ["Monthly", "Monthly"],
+            ["Year", "Year"],
+          ])}
           ${input("Remaining visits", "remainingAccesses", card.remainingAccesses, "number")}
           ${input("Start date", "startDate", card.startDate, "date")}
           ${input("End date", "endDate", card.endDate, "date")}
@@ -50,7 +62,7 @@ export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
         </label>
       </div>`,
     didOpen: () => bindAvatarInput("eu-image", "eu-preview"),
-    preConfirm: () => {
+    preConfirm: async () => {
       const val = (id: string) => (document.getElementById(`eu-${id}`) as HTMLInputElement).value.trim();
       const fullName = val("fullName");
       if (!fullName || !val("email")) {
@@ -80,11 +92,14 @@ export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
         isBlacklisted: (document.getElementById("eu-isBlacklisted") as HTMLInputElement).checked,
         updatedAt: new Date().toISOString(),
       };
+      // Save before closing: on an API error the popup stays open with the message, nothing changes.
+      try {
+        await useDataStore.getState().updateMember(updated);
+      } catch (err) {
+        Swal.showValidationMessage(writeErrorMessage(err));
+        return false;
+      }
       return updated;
     },
   });
-
-  if (result.isConfirmed && result.value) {
-    useDataStore.getState().updateMember(result.value);
-  }
 };

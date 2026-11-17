@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 import { ICard } from "@/Interface/card";
-import useDataStore from "@/Store/DataStore";
+import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import { bindAvatarInput, daysAgo, DEFAULT_AVATAR, esc } from "@/lib/utils";
 import { swalTheme, fieldStyle, labelStyle } from "./theme";
 
@@ -11,13 +11,15 @@ export const showAddUserModal = async (darkMode: boolean) => {
     .staff.filter((s) => s.jobType === "Trainer" || s.jobType === "Instructor")
     .map((s) => `${s.FName} ${s.Lname}`);
 
-  const result = await Swal.fire<ICard>({
+  await Swal.fire<ICard>({
     title: "Add new member",
     width: "36rem",
     ...swalTheme(darkMode),
     showCancelButton: true,
     confirmButtonText: "Add member",
     focusConfirm: false,
+    showLoaderOnConfirm: true,
+    allowOutsideClick: () => !Swal.isLoading(),
     html: `
       <div style="display:grid;gap:.75rem">
         <label for="au-image" style="cursor:pointer;justify-self:center;text-align:center;font-size:.85rem">
@@ -45,7 +47,7 @@ export const showAddUserModal = async (darkMode: boolean) => {
         <label style="${labelStyle}">Goal<input id="au-goals" style="${f}" placeholder="e.g. Lose weight"></label>
       </div>`,
     didOpen: () => bindAvatarInput("au-image", "au-preview"),
-    preConfirm: () => {
+    preConfirm: async () => {
       const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
       const fullName = val("au-name");
       const email = val("au-email");
@@ -89,11 +91,14 @@ export const showAddUserModal = async (darkMode: boolean) => {
         createdAt: now,
         updatedAt: now,
       };
+      // Save before closing: on an API error the popup stays open with the message, nothing changes.
+      try {
+        await useDataStore.getState().addMember(card);
+      } catch (err) {
+        Swal.showValidationMessage(writeErrorMessage(err));
+        return false;
+      }
       return card;
     },
   });
-
-  if (result.isConfirmed && result.value) {
-    useDataStore.getState().addMember(result.value);
-  }
 };
