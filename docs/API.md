@@ -456,7 +456,7 @@ minimum 4000, default 8000 without data.
 |---|---|---|---|
 | GET | `/stats/public` | 🌐 | `{ data: { members: 12400, membersLabel: "+12.4k", coaches: 6, programs: 6, featuredInitials: ["AR","MK","JS","TL"] } }` |
 
-`members` = registered users + `PUBLIC_MEMBER_BASE` env (default 12000, a
+`members` = registered users + `PUBLIC_MEMBER_BASE` env (default 12400, a
 marketing offset; set 0 to show the real count).
 
 ### Gym admin — members (membership cards)
