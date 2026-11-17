@@ -26,7 +26,7 @@ npm run dev                 # http://localhost:4000/api/v1/health
 | Role   | Email                 | Password |
 |--------|-----------------------|----------|
 | member | `demo@pulsa.example`  | `SEED_DEMO_PASSWORD` (default `pulsa-demo-2026`) |
-| coach  | `coach@pulsa.example` | same as demo |
+| coach  | `coach@pulsa.example` | `SEED_COACH_PASSWORD` — if empty, the seed prints a random one (never the demo password: coaches can read their clients' data) |
 | admin  | `SEED_ADMIN_EMAIL` (default `admin@pulsa.example`) | `SEED_ADMIN_PASSWORD` — if empty, the seed prints a random one |
 
 The demo member has 90 days of heart data (30 days with a full heart-rate series);
@@ -40,7 +40,7 @@ today's numbers match the landing page hero: **72 bpm, 24k steps, 1.32 recovery*
 | `npm run build` | compile to `dist/` |
 | `npm start` | run `dist/server.js` |
 | `npm run seed` | wipe + seed (dev, TypeScript) |
-| `npm run seed:prod -- --force` | wipe + seed from `dist/` (required `--force` when `NODE_ENV=production`) |
+| `npm run seed:prod -- --force` | wipe + seed from `dist/` (`--force` and `SEED_DEMO_PASSWORD` are required when `NODE_ENV=production`) |
 | `npm test` | supertest + vitest against an in-memory MongoDB (set `MONGO_TEST_URI` to use a real one) |
 | `npm run typecheck` | `tsc --noEmit` |
 
@@ -62,7 +62,7 @@ See [`.env.example`](.env.example).
 | `TRUST_PROXY` | no | `1` | proxy hops (for correct client IPs in rate limiting) |
 | `RATE_LIMIT_ENABLED` | no | `true` | |
 | `PUBLIC_MEMBER_BASE` | no | `12400` | marketing offset for `/stats/public`; `0` = real count |
-| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_DEMO_PASSWORD` | seed only | | |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_COACH_PASSWORD` / `SEED_DEMO_PASSWORD` | seed only | | admin and coach passwords are random (printed once) if empty; demo defaults to `pulsa-demo-2026` in dev only |
 
 ## Deploy to Render (free)
 
@@ -77,7 +77,7 @@ See [`.env.example`](.env.example).
 4. After the first deploy, seed once from your machine against Atlas:
    ```bash
    cd backend && npm run build
-   MONGODB_URI="<atlas uri>" NODE_ENV=production SEED_ADMIN_PASSWORD="<strong password>" JWT_SECRET="<any 32+ chars>" npm run seed:prod -- --force
+   MONGODB_URI="<atlas uri>" NODE_ENV=production SEED_ADMIN_PASSWORD="<strong>" SEED_COACH_PASSWORD="<strong>" SEED_DEMO_PASSWORD="<demo>" JWT_SECRET="<any 32+ chars>" npm run seed:prod -- --force
    ```
 5. Check `https://<service>.onrender.com/api/v1/health` → `{"data":{"status":"ok","db":"up"}}`.
 6. In the frontend (Vercel) set `NEXT_PUBLIC_API_URL=https://<service>.onrender.com/api/v1`.

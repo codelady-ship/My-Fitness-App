@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { addDays, today } from "../src/lib/dates";
+import { Coach } from "../src/models/Coach";
 import { aggregate, downsample, summarize } from "../src/services/metrics";
 import { buildDailyPlan } from "../src/services/plan";
 import { api, makeUser } from "./helpers";
@@ -8,17 +9,27 @@ type Auth = { Authorization: string };
 let me: Auth;
 let meId = "";
 let other: Auth;
+let otherId = "";
 let coach: Auth;
+let strangerCoach: Auth;
+let admin: Auth;
 
 const T = today();
 const d = (n: number) => addDays(T, -n);
 
 beforeAll(async () => {
-  const u = await makeUser("member", { birthDate: "1996-01-01" });
+  // `coach` has a coach profile and `me` is their client; `strangerCoach` coaches nobody.
+  const c = await makeUser("coach");
+  coach = c.auth;
+  const profile = await Coach.create({ name: "Leyla Taghizade", userId: c.user._id });
+  const u = await makeUser("member", { birthDate: "1996-01-01", coachId: profile._id });
   me = u.auth;
   meId = u.id;
-  other = (await makeUser("member")).auth;
-  coach = (await makeUser("coach")).auth;
+  const o = await makeUser("member");
+  other = o.auth;
+  otherId = o.id;
+  strangerCoach = (await makeUser("coach")).auth;
+  admin = (await makeUser("admin")).auth;
 });
 
 describe("metrics ingest", () => {
@@ -73,12 +84,21 @@ describe("metrics queries", () => {
     await api().get(`/api/v1/metrics/days?from=${T}&to=${d(1)}`).set(me).expect(400);
   });
 
-  it("isolates users; coaches may read with ?userId", async () => {
+  it("isolates users; ?userId is limited to admins and the user's own coach", async () => {
     const mine = await api().get("/api/v1/metrics/days").set(other).expect(200);
     expect(mine.body.meta.total).toBe(0);
     await api().get(`/api/v1/metrics/days?userId=${meId}`).set(other).expect(403);
+
     const asCoach = await api().get(`/api/v1/metrics/summary?userId=${meId}`).set(coach).expect(200);
     expect(asCoach.body.data.latest.restingBpm).toBe(72);
+    // not their client / coach without a profile / unknown user → all 403
+    await api().get(`/api/v1/metrics/summary?userId=${otherId}`).set(coach).expect(403);
+    await api().get(`/api/v1/metrics/days?userId=${meId}`).set(strangerCoach).expect(403);
+    await api().get(`/api/v1/metrics/series?date=${T}&userId=${"a".repeat(24)}`).set(coach).expect(403);
+
+    const asAdmin = await api().get(`/api/v1/metrics/days?userId=${meId}`).set(admin).expect(200);
+    expect(asAdmin.body.meta.total).toBe(7);
+    await api().get(`/api/v1/metrics/days?userId=${"a".repeat(24)}`).set(admin).expect(404);
   });
 
   it("summary feeds the gauge", async () => {

@@ -232,7 +232,12 @@ const countBy = async <T extends string>(
 export const adminRouter = Router();
 adminRouter.use(requireAuth, requireRole("coach", "admin"));
 
-adminRouter.get("/stats", async (_req, res) => {
+adminRouter.get("/stats", async (req, res) => {
+  // remainingAccesses is a chart list, so it is capped (members.total gives the full count).
+  const { remainingLimit } = parse(
+    z.object({ remainingLimit: z.coerce.number().int().min(1).max(100).default(20) }),
+    req.query,
+  );
   const now = new Date();
   const day = today();
   const [
@@ -258,7 +263,10 @@ adminRouter.get("/stats", async (_req, res) => {
     Staff.countDocuments(),
     countBy(Staff, "jobType", JOB_TYPES),
     countBy(User, "role", ["member", "coach", "admin"] as const),
-    Member.find({}, { memberCode: 1, fullName: 1, remainingAccesses: 1, _id: 0 }).sort({ memberCode: 1 }).lean(),
+    Member.find({}, { memberCode: 1, fullName: 1, remainingAccesses: 1, _id: 0 })
+      .sort({ memberCode: 1 })
+      .limit(remainingLimit)
+      .lean(),
     ContactMessage.countDocuments({ status: "new" }),
     NewsletterSubscriber.countDocuments({ status: "subscribed" }),
   ]);

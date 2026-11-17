@@ -329,8 +329,13 @@ password returns 401 `UNAUTHORIZED` (same message for both).
 | DELETE | `/pricing-plans/:id` | 🛡️ | 204 |
 
 ### Heart metrics
-All 🔑. They act on the **caller's own data**. Coaches/admins may add
-`?userId=<id>` to read (GET only) another user's data.
+All 🔑. They act on the **caller's own data**. GET routes accept
+`?userId=<id>` to read another user's data:
+- **admin**: any user (404 if the user does not exist);
+- **coach**: only users whose `coachId` is that coach's own profile (the
+  Coach whose `userId` is the coach's account); anyone else → 403
+  `FORBIDDEN` (also for unknown ids, so ids cannot be probed);
+- **member**: 403.
 
 | Method | Path | Body / Query | Response |
 |---|---|---|---|
@@ -481,7 +486,7 @@ marketing offset; set 0 to show the real count).
 ### Gym admin — dashboard & activity
 | Method | Path | Access | Response |
 |---|---|---|---|
-| GET | `/admin/stats` | 🧑‍🏫 | see below |
+| GET | `/admin/stats` | 🧑‍🏫 | `?remainingLimit=20` (1–100) caps the `remainingAccesses` list (sorted by `memberCode`; `members.total` is the full count). See below. |
 | GET | `/admin/activity` | 🧑‍🏫 | `?days=14` (1–90) → `{ data: [ { "date": "2026-11-04", "checkIns": 3, "registrations": 1 } ] }` one entry per day, oldest first, zero-filled |
 
 ```json

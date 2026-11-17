@@ -101,7 +101,7 @@ describe("seeded dashboard", () => {
   let demo: Auth;
 
   beforeAll(async () => {
-    await seedDatabase({ adminEmail: "admin@pulsa.example", adminPassword: "admin-pass-123", demoPassword: "demo-pass-123", light: true });
+    await seedDatabase({ adminEmail: "admin@pulsa.example", adminPassword: "admin-pass-123", demoPassword: "demo-pass-123", coachPassword: "coach-pass-123", light: true });
     const a = await api().post("/api/v1/auth/login").send({ email: "admin@pulsa.example", password: "admin-pass-123" }).expect(200);
     seededAdmin = { Authorization: `Bearer ${a.body.data.accessToken}` };
     const d = await api().post("/api/v1/auth/login").send({ email: "demo@pulsa.example", password: "demo-pass-123" }).expect(200);
@@ -116,7 +116,20 @@ describe("seeded dashboard", () => {
     expect(s.staff.total).toBe(8);
     expect(s.users).toMatchObject({ admin: 1, coach: 1 });
     expect(s.remainingAccesses).toHaveLength(10);
+    const capped = await api().get("/api/v1/admin/stats?remainingLimit=3").set(seededAdmin).expect(200);
+    expect(capped.body.data.remainingAccesses.map((r: { memberCode: string }) => r.memberCode)).toEqual(["C123456", "C654321", "C654322"]);
+    await api().get("/api/v1/admin/stats?remainingLimit=500").set(seededAdmin).expect(400);
     expect(s.contact.new).toBe(2);
+  });
+
+  it("seeded coach has its own password and sees only its clients", async () => {
+    await api().post("/api/v1/auth/login").send({ email: "coach@pulsa.example", password: "demo-pass-123" }).expect(401);
+    const c = await api().post("/api/v1/auth/login").send({ email: "coach@pulsa.example", password: "coach-pass-123" }).expect(200);
+    const coachAuth = { Authorization: `Bearer ${c.body.data.accessToken}` };
+    const me = await api().get("/api/v1/auth/me").set(demo).expect(200);
+    await api().get(`/api/v1/metrics/summary?userId=${me.body.data.id}`).set(coachAuth).expect(200);
+    // background members cannot log in with the demo password
+    await api().post("/api/v1/auth/login").send({ email: "aylin.rzayeva@pulsa.example", password: "demo-pass-123" }).expect(401);
   });
 
   it("activity is zero-filled per day", async () => {

@@ -6,6 +6,7 @@ import { ApiError } from "../lib/errors";
 import { pageMeta } from "../lib/pagination";
 import { boolQuery, dateString, objectId, parse } from "../lib/validate";
 import { isStaffRole, requireAuth } from "../middleware/auth";
+import { Coach } from "../models/Coach";
 import { MetricDay, normalizeSeries } from "../models/MetricDay";
 import { User } from "../models/User";
 import { aggregate, downsample, summarize, type DayRow } from "../services/metrics";
@@ -66,11 +67,23 @@ const seriesQuery = z.object({
 
 const NO_SERIES = { heartRate: 0 } as const;
 
-/** Whose data a read targets: own by default; coaches/admins may pass ?userId. */
+/**
+ * Whose data a read targets: own by default. With ?userId, admins may read
+ * anyone; coaches only users whose coachId is their own coach profile.
+ */
 async function targetUser(req: Request, userId?: string): Promise<Types.ObjectId> {
   if (!userId || userId === req.user!.id) return new Types.ObjectId(req.user!.id);
-  if (!isStaffRole(req.user!.role)) throw ApiError.forbidden("Only coaches and admins can read other users' metrics");
-  if (!(await User.exists({ _id: userId }))) throw ApiError.notFound("User");
+  const role = req.user!.role;
+  if (!isStaffRole(role)) throw ApiError.forbidden("Only coaches and admins can read other users' metrics");
+  if (role === "admin") {
+    if (!(await User.exists({ _id: userId }))) throw ApiError.notFound("User");
+    return new Types.ObjectId(userId);
+  }
+  const profile = await Coach.findOne({ userId: req.user!.id }, { _id: 1 }).lean();
+  // Same 403 whether the user is missing or just not this coach's client (no user enumeration).
+  if (!profile || !(await User.exists({ _id: userId, coachId: profile._id }))) {
+    throw ApiError.forbidden("Coaches can only read metrics of their own clients");
+  }
   return new Types.ObjectId(userId);
 }
 

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Types } from "mongoose";
 import { addDays, today } from "../lib/dates";
@@ -155,6 +156,8 @@ export type SeedOptions = {
   adminEmail: string;
   adminPassword: string;
   demoPassword: string;
+  /** Coach login password (never the demo one: coaches can read client data). */
+  coachPassword: string;
   /** Smaller data set (used by tests). */
   light?: boolean;
 };
@@ -167,11 +170,17 @@ export async function seedDatabase(opts: SeedOptions) {
   );
   await Promise.all([User, MetricDay, Member, Program, PricingPlan, Staff].map((m) => (m as typeof User).syncIndexes()));
 
-  const [adminHash, demoHash] = await Promise.all([bcrypt.hash(opts.adminPassword, 10), bcrypt.hash(opts.demoPassword, 10)]);
+  // Background members get an unguessable password nobody knows; only demo/coach/admin can log in.
+  const [adminHash, coachHash, demoHash, crowdHash] = await Promise.all([
+    bcrypt.hash(opts.adminPassword, 10),
+    bcrypt.hash(opts.coachPassword, 10),
+    bcrypt.hash(opts.demoPassword, 10),
+    bcrypt.hash(crypto.randomBytes(24).toString("base64url"), 10),
+  ]);
 
   // Coaches + one coach login linked to the head coach.
   const coaches = await Coach.create(COACHES.map((c) => ({ ...c, avatarUrl: "" })));
-  const coachUser = await User.create({ name: "Leyla Taghizade", email: "coach@pulsa.example", passwordHash: demoHash, role: "coach", birthDate: "1991-03-08", gender: "female" });
+  const coachUser = await User.create({ name: "Leyla Taghizade", email: "coach@pulsa.example", passwordHash: coachHash, role: "coach", birthDate: "1991-03-08", gender: "female" });
   coaches[0]!.userId = coachUser._id;
   await coaches[0]!.save();
 
@@ -201,7 +210,7 @@ export async function seedDatabase(opts: SeedOptions) {
     const u = new User({
       name,
       email: `${name.toLowerCase().replace(/\s+/g, ".")}@pulsa.example`,
-      passwordHash: demoHash,
+      passwordHash: crowdHash,
       role: "member",
       programId: programs[i % programs.length]!._id,
       coachId: coaches[i % coaches.length]!._id,
