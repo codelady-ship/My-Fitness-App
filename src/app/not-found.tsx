@@ -5,13 +5,24 @@ export const metadata: Metadata = { title: "Page not found", robots: { index: fa
 
 export default function NotFound() {
   return (
-    <div className="mx-auto max-w-md px-4 py-16 text-center">
-      <p className="font-semibold text-amber-600">404</p>
-      <h1 className="mt-2 text-3xl font-semibold">Page not found</h1>
-      <p className="mt-3 opacity-80">This page does not exist.</p>
-      <Link href="/dashboard" className="mt-6 inline-block rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">
-        Go to the dashboard
-      </Link>
-    </div>
+    <main id="main" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "24px var(--pad)" }}>
+      <div className="glass-solid" style={{ padding: "40px 32px", textAlign: "center", maxWidth: 460 }}>
+        <p className="display" style={{ margin: 0, fontSize: 80, color: "var(--coral)" }}>
+          404
+        </p>
+        <h1 style={{ margin: "8px 0 0", fontSize: 26 }}>Page not found</h1>
+        <p className="muted" style={{ margin: "10px 0 0" }}>
+          This page skipped a beat. It does not exist or was moved.
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
+          <Link href="/" className="btn btn-coral">
+            Go home
+          </Link>
+          <Link href="/dashboard" className="btn btn-ghost">
+            Dashboard
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }

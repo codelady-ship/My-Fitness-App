@@ -1,82 +1,84 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { usePathname, useRouter } from "next/navigation";
+import { FiArrowLeft, FiLogIn, FiLogOut, FiX } from "react-icons/fi";
 import { links } from "../../../Mock/links";
 import useSidebarStore from "../../../Store/SidebarStore";
+import Logo from "../pulsa/Logo";
+import { useSession } from "../pulsa/useSession";
+import { logout } from "@/lib/api";
 
-/**
- * Desktop (md+): sticky rail that can be expanded (labels) or collapsed (icons).
- * Phone/tablet: hidden off-canvas drawer opened from the navbar.
- */
+/** Glass sidebar. Desktop: sticky rail. Below 1024px: off-canvas drawer opened from the page header. */
 const Sidebar = () => {
-  const { isOpen, toggleSidebar, darkMode, mobileOpen, setMobileOpen } = useSidebarStore();
+  const { mobileOpen, setMobileOpen } = useSidebarStore();
   const path = usePathname();
-
+  const router = useRouter();
+  const { session } = useSession();
   const isActive = (to: string) => path === to || path.startsWith(to + "/");
-  // In the phone drawer labels are always shown.
-  const showLabels = isOpen || mobileOpen;
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen, setMobileOpen]);
 
   return (
     <>
-      {/* backdrop for the phone drawer */}
-      <div
-        aria-hidden
-        onClick={() => setMobileOpen(false)}
-        className={`fixed inset-0 z-30 bg-black/50 transition-opacity md:hidden ${
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      />
-      <aside
-        id="sidebar"
-        aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r transition-transform duration-300 md:sticky md:top-0 md:h-screen md:translate-x-0 md:transition-[width] ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } ${isOpen ? "md:w-60" : "md:w-20"} ${darkMode ? "border-gray-700 bg-black" : "border-amber-200 bg-yellow-50"}`}
-      >
-        <div className="flex h-16 items-center px-4">
-          {/* desktop: expand / collapse */}
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="hidden rounded-md p-2 text-2xl md:block"
-            aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <FaTimes /> : <FaBars />}
-          </button>
-          {/* phone: close drawer */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-md p-2 text-2xl md:hidden"
-            aria-label="Close menu"
-          >
-            <FaTimes />
-          </button>
-        </div>
+      {mobileOpen && <div className="drawer-backdrop" aria-hidden onClick={() => setMobileOpen(false)} />}
+      <aside id="sidebar" aria-label="Dashboard navigation" className={`app-side${mobileOpen ? " open" : ""}`}>
+        <div className="app-side-inner glass">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px" }}>
+            <Logo />
+            <button type="button" className="icon-btn mobile-only" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+              <FiX />
+            </button>
+          </div>
 
-        <nav className="flex flex-col gap-1 px-3">
-          {links.map(({ id, title, to, icon }) => (
-            <Link
-              key={id}
-              href={to}
-              title={title}
-              aria-current={isActive(to) ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg p-3 font-semibold ${showLabels ? "" : "md:justify-center"} ${
-                isActive(to)
-                  ? "bg-amber-500 text-white"
-                  : darkMode
-                    ? "text-gray-100 hover:bg-gray-800"
-                    : "text-gray-800 hover:bg-amber-100"
-              }`}
-            >
-              <span className="text-2xl">{React.createElement(icon)}</span>
-              <span className={`text-lg ${showLabels ? "" : "md:sr-only"}`}>{title}</span>
+          <nav className="app-nav">
+            <span className="group-label">My heart</span>
+            <Link href={links[0].to} aria-current={isActive(links[0].to) ? "page" : undefined}>
+              {React.createElement(links[0].icon, { "aria-hidden": true })}
+              {links[0].title}
             </Link>
-          ))}
-        </nav>
+            {/* Gym admin is for coaches/admins; demo visitors (no session) can try it with demo data. */}
+            {session?.user.role !== "member" && (
+              <>
+                <span className="group-label">Gym admin</span>
+                {links.slice(1).map(({ id, title, to, icon }) => (
+                  <Link key={id} href={to} aria-current={isActive(to) ? "page" : undefined}>
+                    {React.createElement(icon, { "aria-hidden": true })}
+                    {title}
+                  </Link>
+                ))}
+              </>
+            )}
+          </nav>
+
+          <div className="app-nav" style={{ marginTop: "auto" }}>
+            <Link href="/">
+              <FiArrowLeft aria-hidden /> Back to site
+            </Link>
+            {session ? (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{ justifyContent: "flex-start", gap: 12, padding: "12px 14px", borderRadius: 16, border: 0, color: "var(--ink-2)" }}
+                onClick={() => {
+                  logout();
+                  router.push("/login");
+                }}
+              >
+                <FiLogOut aria-hidden style={{ fontSize: 19 }} /> Log out
+              </button>
+            ) : (
+              <Link href="/login">
+                <FiLogIn aria-hidden /> Log in
+              </Link>
+            )}
+          </div>
+        </div>
       </aside>
     </>
   );

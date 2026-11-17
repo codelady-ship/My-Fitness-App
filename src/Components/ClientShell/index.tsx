@@ -1,40 +1,43 @@
 "use client";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import useSidebarStore from "../../../Store/SidebarStore";
 import useDataStore from "../../../Store/DataStore";
 
 /**
- * Client wrapper for the whole app: reads saved data and preferences from
- * localStorage, applies the light/dark theme and renders the sidebar + navbar.
- * Kept separate so that the root layout can stay a Server Component and export metadata.
+ * Client wrapper for the dashboard area: reads saved data from localStorage (then the API)
+ * and renders the glass sidebar. Kept separate so layouts can stay Server Components.
  */
 export default function ClientShell({ children }: { children: React.ReactNode }) {
-  const darkMode = useSidebarStore((s) => s.darkMode);
   const setMobileOpen = useSidebarStore((s) => s.setMobileOpen);
   const pathname = usePathname();
 
   useEffect(() => {
     useSidebarStore.persist.rehydrate();
     useDataStore.persist.rehydrate();
+    // Login/logout (here or in another tab): reload members/staff for the new session.
+    // After logout this switches back to the demo copy, so no API data stays on screen.
+    const resync = () => void useDataStore.getState().syncFromApi();
+    // Only the session key: data writes in another tab must not trigger a sync ping-pong.
+    const onStorage = (e: StorageEvent) => e.key === "pulsa-session" && resync();
+    window.addEventListener("pulsa-session", resync);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("pulsa-session", resync);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   // Close the phone drawer after navigating.
   useEffect(() => setMobileOpen(false), [pathname, setMobileOpen]);
 
-  useEffect(() => {
-    document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
-  }, [darkMode]);
-
   return (
-    <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"}`}>
+    <div className="app">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-      </div>
+      <main id="main" className="app-main">
+        {children}
+      </main>
     </div>
   );
 }
