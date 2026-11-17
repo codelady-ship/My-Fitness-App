@@ -1,0 +1,19 @@
+# Pulsa
+
+> Pulsa is a cardio-coaching web app (portfolio project by Antiqa, not medical advice). It reads heart-rate data from a watch or chest strap, turns it into zones, recovery and trends, adapts the training plan every day and connects members with certified cardio coaches.
+
+## Pages
+
+- [Home](https://my-fitness-app-tau-drab.vercel.app/): how Pulsa works (reads every beat, adapts daily, real coaches)
+- [Programs](https://my-fitness-app-tau-drab.vercel.app/programs): heart-rate based programs such as Zone 2 base, HIIT intervals, recovery, half marathon prep, cycling threshold and HRV, each with target zones
+- [Coaches](https://my-fitness-app-tau-drab.vercel.app/coaches): cardio coaches and their specialities
+- [Pricing](https://my-fitness-app-tau-drab.vercel.app/pricing): Starter (free), Pulse (daily adaptive plan), Coach+ (personal cardio coach), plus FAQ
+- [Contact](https://my-fitness-app-tau-drab.vercel.app/contact): questions about programs, coaching or an account
+- [Create account](https://my-fitness-app-tau-drab.vercel.app/register) and [Log in](https://my-fitness-app-tau-drab.vercel.app/login)
+
+The member dashboard (/dashboard, /users, /cards, /staff) needs a login and is not meant for indexing.
+
+## Source and machine-readable files
+
+- [Source code](https://github.com/codelady-ship/My-Fitness-App)
+- [Sitemap](https://my-fitness-app-tau-drab.vercel.app/sitemap.xml)

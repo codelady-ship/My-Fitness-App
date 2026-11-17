@@ -2,15 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import { getCoaches } from "@/lib/api";
-import { MEDIA } from "@/lib/site";
+import { MEDIA, pageMeta } from "@/lib/site";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Coaches",
-  description: "Meet the Pulsa cardio coaches: endurance, HIIT, cardiac recovery, cycling, HRV and running specialists.",
-  alternates: { canonical: "/coaches" },
-};
+export const metadata: Metadata = pageMeta("/coaches", "Coaches", "Meet the Pulsa cardio coaches: endurance, HIIT, cardiac recovery, cycling, HRV and running specialists who review your heart data and adjust your plan.");
 
 const TINTS = ["#ff8a75", "#6f86c6", "#16213a", "#f2a07b", "#8aa0d6", "#d9442f"];
 const initials = (name: string) =>
