@@ -3,10 +3,43 @@ import Link from "next/link";
 import Hero from "@/src/Components/pulsa/Hero";
 import { ArrowIcon } from "@/src/Components/pulsa/Icons";
 import { getPublicStats } from "@/lib/api";
+import { SITE_URL, jsonLd } from "@/lib/site";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+/** Organization, WebSite and the app itself; Pulsa is an app, not a gym, so no location types. */
+const siteLd = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "Pulsa",
+      url: SITE_URL,
+      sameAs: ["https://github.com/codelady-ship/My-Fitness-App"],
+    },
+    {
+      "@type": "WebSite",
+      name: "Pulsa",
+      url: SITE_URL,
+      inLanguage: "en",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "WebApplication",
+      name: "Pulsa",
+      url: SITE_URL,
+      applicationCategory: "HealthApplication",
+      operatingSystem: "Web",
+      description:
+        "Cardio-coaching app that reads every beat, adapts your training plan daily and turns your heart data into real progress.",
+      featureList: FEATURES.map((f) => `${f.title}: ${f.text}`),
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+  ],
+});
 
 const FEATURES = [
   { n: "01", title: "Reads every beat", text: "Connect a watch or chest strap. Pulsa turns raw heart rate into zones, recovery and trends you can understand." },
@@ -18,6 +51,7 @@ export default async function Home() {
   const { data: stats } = await getPublicStats();
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(siteLd()) }} />
       <Hero stats={stats} />
       <section className="section" aria-labelledby="how-title" style={{ paddingTop: "clamp(40px, 6vw, 90px)" }}>
         <p className="eyebrow">How it works</p>

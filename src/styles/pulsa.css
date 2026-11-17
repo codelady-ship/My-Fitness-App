@@ -226,6 +226,10 @@ html {
   padding: 0 14px;
   font-size: 14px;
 }
+/* Public pages are used on phones: keep small buttons at a 44px tap height there. */
+.page .btn-sm {
+  min-height: 44px;
+}
 
 .btn .heart-dot {
   display: grid;
@@ -342,6 +346,7 @@ textarea.input {
 .logo {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: 10px;
   color: var(--ink);
   text-decoration: none;
@@ -369,7 +374,9 @@ textarea.input {
   border-radius: 999px;
 }
 .nav-links a {
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   padding: 10px 18px;
   border-radius: 999px;
   color: var(--ink-2);
@@ -691,7 +698,7 @@ textarea.input {
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 .gauge-stats dt {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 .gauge-stats dd {
@@ -818,9 +825,13 @@ textarea.input {
 .site-footer nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 18px;
+  gap: 0 18px;
 }
 .site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
   color: var(--ink-2);
   text-decoration: none;
 }

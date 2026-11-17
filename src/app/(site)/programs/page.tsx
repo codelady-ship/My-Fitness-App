@@ -2,15 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import { getPrograms } from "@/lib/api";
-import { MEDIA } from "@/lib/site";
+import { MEDIA, pageMeta } from "@/lib/site";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Programs",
-  description: "Heart-rate based cardio programs: Zone 2 base, HIIT intervals, recovery, half marathon prep, cycling threshold and HRV.",
-  alternates: { canonical: "/programs" },
-};
+export const metadata: Metadata = pageMeta("/programs", "Programs", "Heart-rate based cardio programs: Zone 2 base, HIIT intervals, recovery, half marathon prep, cycling threshold and HRV training, each with target zones.");
 
 const ZONE_NAMES = ["", "Recovery", "Aerobic", "Tempo", "Threshold", "VO₂ max"];
 

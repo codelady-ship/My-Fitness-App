@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import ContactForm from "@/src/Components/pulsa/ContactForm";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Questions about Pulsa programs, coaching or your account? Send us a message.",
-  alternates: { canonical: "/contact" },
-};
+export const metadata: Metadata = pageMeta("/contact", "Contact", "Questions about Pulsa programs, coaching, pricing or your account? Send the Pulsa team a message: a real person answers within one working day.");
 
 export default function ContactPage() {
   return (

@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
+import { jsonLd, pageMeta } from "@/lib/site";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import PricingTable from "@/src/Components/pulsa/PricingTable";
 import { getPlans } from "@/lib/api";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Pulsa plans: Starter is free, Pulse adds a daily adaptive plan, Coach+ adds a personal cardio coach.",
-  alternates: { canonical: "/pricing" },
-};
+export const metadata: Metadata = pageMeta("/pricing", "Pricing", "Pulsa plans: Starter is free, Pulse adds a daily adaptive cardio plan from your heart data, Coach+ adds a personal cardio coach. Student discount available.");
 
 const FAQ = [
   ["Do I need a heart-rate monitor?", "Any watch or chest strap that records heart rate works. Without one you can still log sessions by hand."],
@@ -18,10 +15,18 @@ const FAQ = [
   ["Is there a student discount?", "Yes, 30% off Pulse and Coach+ with a valid student email. Write to us from the contact page."],
 ];
 
+/** The questions shown below, as FAQPage data for search and answer engines. */
+const FAQ_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+};
+
 export default async function PricingPage() {
   const { data: plans, source } = await getPlans();
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(FAQ_LD) }} />
       <PageHero
         eyebrow="Pricing"
         lines={["Simple plans,", "[strong] hearts"]}

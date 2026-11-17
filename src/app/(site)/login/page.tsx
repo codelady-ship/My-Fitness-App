@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import AuthForm from "@/src/Components/pulsa/AuthForm";
 
-export const metadata: Metadata = {
-  title: "Log in",
-  description: "Log in to Pulsa to see your heart metrics and today's plan.",
-  alternates: { canonical: "/login" },
-};
+export const metadata: Metadata = pageMeta("/login", "Log in", "Log in to Pulsa to see your heart-rate zones, recovery trends and today's adaptive cardio plan, built from the data your watch or chest strap records.");
 
 export default function LoginPage() {
   return (

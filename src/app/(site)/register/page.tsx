@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import PageHero from "@/src/Components/pulsa/PageHero";
 import AuthForm from "@/src/Components/pulsa/AuthForm";
 
-export const metadata: Metadata = {
-  title: "Create account",
-  description: "Create a free Pulsa account and start tracking your heart.",
-  alternates: { canonical: "/register" },
-};
+export const metadata: Metadata = pageMeta("/register", "Create account", "Create a free Pulsa account, connect a watch or chest strap and start tracking heart-rate zones, recovery and progress with a plan that adapts daily.");
 
 export default function RegisterPage() {
   return (
