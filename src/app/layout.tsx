@@ -1,40 +1,44 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Inter, Inter_Tight } from "next/font/google";
 import "./globals.css";
-import ClientShell from "../Components/ClientShell";
+import { SITE_URL } from "@/lib/site";
 
-const poppins = Poppins({ weight: ["400", "600"], subsets: ["latin"], display: "swap" });
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+const interTight = Inter_Tight({ subsets: ["latin"], weight: ["600", "800"], display: "swap", variable: "--font-inter-tight" });
 
-const SITE_URL = "https://my-fitness-app-tau-drab.vercel.app";
-const TITLE = "My Fitness: gym admin dashboard";
+const TITLE = "Pulsa: your personal heart coach";
 const DESCRIPTION =
-  "A gym admin dashboard built with Next.js: members, membership cards, staff and an activity chart. Demo data is saved in your browser.";
+  "Pulsa is a cardio-coaching app that reads every beat, adapts your training plan daily and turns your heart data into real progress.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: TITLE, template: "%s | My Fitness" },
+  title: { default: TITLE, template: "%s | Pulsa" },
   description: DESCRIPTION,
-  applicationName: "My Fitness",
+  applicationName: "Pulsa",
   authors: [{ name: "Antiqa", url: "https://github.com/codelady-ship" }],
-  alternates: { canonical: "/dashboard" },
+  keywords: ["cardio coaching", "heart rate training", "zone 2", "fitness app", "heart coach"],
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: SITE_URL,
-    siteName: "My Fitness",
+    siteName: "Pulsa",
     title: TITLE,
     description: DESCRIPTION,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "My Fitness dashboard with member stats and an activity chart" }],
+    locale: "en_US",
   },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-export const viewport: Viewport = { themeColor: "#f59e0b" };
+export const viewport: Viewport = { themeColor: "#eef3fb", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={poppins.className}>
-        <ClientShell>{children}</ClientShell>
+    <html lang="en" className={`${inter.variable} ${interTight.variable}`}>
+      <body>
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        {children}
       </body>
     </html>
   );

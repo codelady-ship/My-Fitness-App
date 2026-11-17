@@ -1,10 +1,2 @@
 @import "tailwindcss";
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* SweetAlert2 popups should never be wider than a phone screen. */
-.swal2-popup {
-  max-width: calc(100vw - 1rem);
-}
+@import "../styles/pulsa.css";

@@ -8,6 +8,7 @@ type UiState = {
   /** phone/tablet: drawer open */
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
+  /** kept for the SweetAlert2 helpers; the Pulsa design is light-only */
   darkMode: boolean;
   toggleTheme: () => void;
   searchTerm: string;
@@ -30,7 +31,7 @@ const useSidebarStore = create<UiState>()(
       name: "my-fitness-ui",
       storage: createJSONStorage(() => localStorage),
       // Only remember preferences, not transient UI state.
-      partialize: (s) => ({ isOpen: s.isOpen, darkMode: s.darkMode }),
+      partialize: (s) => ({ isOpen: s.isOpen }),
       // Rehydrated in ClientShell after mount, so server and first client render match.
       skipHydration: true,
     },

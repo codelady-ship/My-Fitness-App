@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- images can be data URLs uploaded by the user */
 type Props = { src?: string; name: string; className?: string };
 
-const palette = ["bg-amber-500", "bg-emerald-500", "bg-sky-500", "bg-rose-500", "bg-violet-500", "bg-teal-500"];
+const palette = ["bg-[#ff8a75]", "bg-[#6f86c6]", "bg-[#16213a]", "bg-[#f2a07b]", "bg-[#8aa0d6]", "bg-[#d9442f]"];
 
 /** Photo if there is one, otherwise coloured initials (colour is stable per name). */
 const Avatar = ({ src, name, className = "h-16 w-16 text-xl" }: Props) => {

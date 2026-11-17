@@ -1,11 +1,17 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
-const SITE_URL = "https://my-fitness-app-tau-drab.vercel.app";
+const ROUTES: [string, number][] = [
+  ["/", 1],
+  ["/programs", 0.9],
+  ["/coaches", 0.8],
+  ["/pricing", 0.9],
+  ["/contact", 0.6],
+  ["/register", 0.5],
+  ["/login", 0.3],
+  ["/dashboard", 0.4],
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ["/dashboard", "/users", "/cards", "/staff"].map((p) => ({
-    url: SITE_URL + p,
-    changeFrequency: "monthly",
-    priority: p === "/dashboard" ? 1 : 0.7,
-  }));
+  return ROUTES.map(([p, priority]) => ({ url: SITE_URL + p, changeFrequency: "monthly", priority }));
 }

@@ -1,18 +1,35 @@
 "use client";
+import { FiMenu } from "react-icons/fi";
 import useSidebarStore from "../../../Store/SidebarStore";
+import { useSession } from "../pulsa/useSession";
 
-/** Title bar used at the top of every page (holds the page's single h1). */
+/** Glass title bar at the top of every dashboard page (holds the page's single h1). */
 const PageHeader = ({ title, children }: { title: string; children?: React.ReactNode }) => {
-  const darkMode = useSidebarStore((s) => s.darkMode);
+  const setMobileOpen = useSidebarStore((s) => s.setMobileOpen);
+  const { session } = useSession();
+  const name = session?.user.name ?? "Guest";
+
   return (
-    <div
-      className={`flex flex-col gap-3 border-b px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between ${
-        darkMode ? "border-gray-700 bg-gray-950" : "border-amber-200 bg-amber-50/60"
-      }`}
-    >
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      {children && <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>}
-    </div>
+    <header className="app-top glass">
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <button type="button" className="icon-btn mobile-only" onClick={() => setMobileOpen(true)} aria-label="Open menu" aria-controls="sidebar">
+          <FiMenu />
+        </button>
+        <h1>{title}</h1>
+      </div>
+      <div className="actions">
+        {children}
+        <div className="user-chip">
+          <span className="initial" aria-hidden="true">
+            {name[0]?.toUpperCase()}
+          </span>
+          <span className="who">
+            <b>{name}</b>
+            <span className="muted">{session ? (session.user.role === "admin" ? "Admin" : "Member") + (session.demo ? " · demo" : "") : "Demo mode"}</span>
+          </span>
+        </div>
+      </div>
+    </header>
   );
 };
 
