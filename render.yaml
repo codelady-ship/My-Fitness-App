@@ -1,0 +1,35 @@
+# Render Blueprint for the Pulsa API (free web service).
+# Render dashboard → New → Blueprint → pick this repo. Nothing is created until you confirm there.
+services:
+  - type: web
+    name: pulsa-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    # --include=dev: TypeScript is a devDependency and NODE_ENV=production would skip it.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # paste your MongoDB Atlas connection string in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true # Render generates a random secret
+      - key: JWT_ACCESS_TTL
+        value: "900"
+      - key: JWT_REFRESH_TTL_DAYS
+        value: "30"
+      - key: CORS_ORIGINS
+        value: http://localhost:3000,https://my-fitness-app-tau-drab.vercel.app
+      - key: TRUST_PROXY
+        value: "1"
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: PUBLIC_MEMBER_BASE
+        value: "12400"
