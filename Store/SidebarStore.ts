@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { safeStateStorage } from "../lib/api/client";
 
 type UiState = {
   /** desktop: sidebar expanded (labels visible) */
@@ -29,7 +30,7 @@ const useSidebarStore = create<UiState>()(
     }),
     {
       name: "my-fitness-ui",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeStateStorage),
       // Only remember preferences, not transient UI state.
       partialize: (s) => ({ isOpen: s.isOpen }),
       // Rehydrated in ClientShell after mount, so server and first client render match.

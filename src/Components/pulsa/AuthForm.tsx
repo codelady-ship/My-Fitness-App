@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ApiError, DEMO_MODE, login, register } from "@/lib/api";
+import { ApiError, DEMO_ADMIN, DEMO_MODE, loadSession, login, loginDemoAdmin, register } from "@/lib/api";
 import { HeartIcon } from "./Icons";
 
 type Mode = "login" | "register";
@@ -13,8 +13,29 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
 
+  async function startDemoAdmin() {
+    setBusy(true);
+    setError("");
+    try {
+      await loginDemoAdmin();
+      router.push("/users");
+    } catch {
+      setError("Could not start the demo. Please try again.");
+      setBusy(false);
+    }
+  }
+
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("expired")) setError("Your session has expired. Please log in again.");
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("expired")) setError("Your session has expired. Please log in again.");
+    // /login?demo=admin (the portfolio's Admin tab) opens the demo admin straight away,
+    // unless someone is already signed in with a real account in this browser.
+    if (mode === "login" && params.get("demo") === "admin") {
+      const s = loadSession();
+      if (!s || s.demo || s.user.readOnly) void startDemoAdmin();
+      else router.replace("/users");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -29,6 +50,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     if (password.length < (mode === "register" ? 8 : 1)) {
       return setError(mode === "register" ? "Use at least 8 characters for your password." : "Please enter your password.");
     }
+
+    // The public demo admin login typed by hand works like the button (also while the API sleeps).
+    if (mode === "login" && email.toLowerCase() === DEMO_ADMIN.email && password === DEMO_ADMIN.password) return startDemoAdmin();
 
     setBusy(true);
     setError("");
@@ -89,6 +113,16 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       <button type="submit" className="btn btn-coral" disabled={busy}>
         {busy ? "Please wait…" : mode === "login" ? "Log in" : "Create account"} <HeartIcon size={14} />
       </button>
+      {mode === "login" && (
+        <>
+          <button type="button" className="btn btn-ghost" onClick={startDemoAdmin} disabled={busy}>
+            Demo admin
+          </button>
+          <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.5 }}>
+            Read-only demo admin: <code>{DEMO_ADMIN.email}</code> / <code>{DEMO_ADMIN.password}</code>. Changes are not saved.
+          </p>
+        </>
+      )}
       <p className="muted" style={{ margin: 0, fontSize: 14 }}>
         {mode === "login" ? (
           <>

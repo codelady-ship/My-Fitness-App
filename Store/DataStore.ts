@@ -4,6 +4,7 @@ import { ICard } from "../Interface/card";
 import { IStaff } from "../Interface/staff";
 import { makeSeedCards } from "../Mock/cards";
 import { staffData } from "../Mock/staff";
+import { safeStateStorage } from "../lib/api/client";
 import { api, ApiError, ApiUnavailable, DEMO_MODE, getMembers, getStaff, loadSession } from "../lib/api";
 
 type Source = "api" | "demo";
@@ -40,6 +41,7 @@ type DataState = {
 export const writeErrorMessage = (err: unknown): string => {
   if (err instanceof ApiUnavailable) return "The server could not be reached, so nothing was saved. Please try again in a minute.";
   if (err instanceof ApiError) {
+    if (err.code === "DEMO_READ_ONLY") return "Demo admin is read-only: changes are not saved. Everything else works as usual.";
     if (err.status === 401) return "Your session has expired. Please log in again.";
     if (err.status === 403) return "Your account is not allowed to change this. Ask an admin.";
     return err.message;
@@ -131,7 +133,8 @@ const useDataStore = create<DataState>()(
     {
       name: "my-fitness-data",
       version: 2,
-      storage: createJSONStorage(() => localStorage),
+      // localStorage, or memory where storage is blocked (cross-site iframe).
+      storage: createJSONStorage(() => safeStateStorage),
       // Only the demo copy is saved. Real members/staff from the API never touch localStorage.
       partialize: (s) => ({ demoCards: s.demoCards, demoStaff: s.demoStaff, seeded: s.seeded }),
       // v1 stored { cards, staff } (demo data only, from the old localStorage-only app).

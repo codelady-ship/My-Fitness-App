@@ -44,7 +44,13 @@ when the API is not configured, asleep or down, so the live site never breaks.
 
 Every request has an 8 s timeout. Network errors, timeouts and 5xx answers switch that view to demo data (and skip the API for 30 s); 4xx errors such as a wrong password are shown to the user.
 
-Demo mode (`NEXT_PUBLIC_API_URL` empty): any email logs in as a demo session; an email starting with `admin@` gets the admin role. When the variable is set, demo sessions are never created.
+Demo mode (`NEXT_PUBLIC_API_URL` empty): any email logs in as a demo session; an email starting with `admin@` gets the admin role. When the variable is set, demo sessions are never created, with one exception below.
+
+**Demo admin** (button on `/login`, or open `/login?demo=admin` directly, as the portfolio does): signs in as the
+public read-only `demo-admin@pulsa.example` / `pulsa-demo-admin`. The API refuses its writes (`403 DEMO_READ_ONLY`,
+shown as a friendly message). When the API is unreachable or not configured, it starts an in-browser sandbox admin on
+the demo copy instead, with a visible "Demo mode: changes are not saved" note. Sessions are kept in localStorage with
+an in-memory fallback, so the admin also works inside a cross-site iframe where storage is blocked.
 
 Security headers: a Content Security Policy (`connect-src` limited to this site and the API origin), `nosniff`, `frame-ancestors 'none'`, a strict referrer policy and a permissions policy are set in `next.config.ts`.
 

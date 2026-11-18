@@ -1416,3 +1416,27 @@ textarea.input {
     animation: none !important;
   }
 }
+
+/* Public demo note above dashboard pages ("Demo mode — changes are not saved"). */
+.demo-note {
+  margin: 0 0 12px;
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* Touch screens (and the portfolio's 390/820px frames): 44px tap targets in the dashboard without changing the look. */
+@media (max-width: 1024px) {
+  .app-main .btn-sm {
+    min-height: 44px;
+  }
+  .check {
+    position: relative;
+  }
+  .check::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+  }
+}

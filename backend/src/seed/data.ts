@@ -12,6 +12,7 @@ import { Program } from "../models/Program";
 import { RefreshToken } from "../models/RefreshToken";
 import { Staff } from "../models/Staff";
 import { User } from "../models/User";
+import { ensureDemoAdmin } from "./demoAdmin";
 
 /* Deterministic PRNG so every seed run produces the same demo data. */
 function rng(seed: number) {
@@ -188,6 +189,8 @@ export async function seedDatabase(opts: SeedOptions) {
   await PricingPlan.create(PLANS);
 
   const admin = await User.create({ name: "Pulsa Admin", email: opts.adminEmail.toLowerCase(), passwordHash: adminHash, role: "admin" });
+  // Public read-only admin for the portfolio demo (writes are refused by the API).
+  const demoAdmin = await ensureDemoAdmin();
 
   const demo = new User({
     createdAt: daysAgoDate(120),
@@ -267,13 +270,14 @@ export async function seedDatabase(opts: SeedOptions) {
 
   return {
     admin: { email: admin.email },
+    demoAdmin: { email: demoAdmin.email, readOnly: true },
     demo: { email: demo.email },
     coach: { email: coachUser.email },
     counts: {
       coaches: coaches.length,
       programs: programs.length,
       pricingPlans: PLANS.length,
-      users: appMembers.length + 3,
+      users: appMembers.length + 4,
       metricDays: metricDocs.length,
       gymMembers: GYM_MEMBERS.length,
       staff: STAFF.length,

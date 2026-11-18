@@ -2,7 +2,7 @@
  * Typed Pulsa API, following docs/API.md (contract v1) on `feature/pulsa-backend`.
  * The `map*` helpers are the only place that knows the server's JSON shape.
  */
-import { API_URL, ApiError, ApiUnavailable, readRefreshToken, request, sessionStorageKey, withFallback } from "./client";
+import { API_URL, ApiError, ApiUnavailable, readRefreshToken, request, safeStorage, sessionStorageKey, withFallback } from "./client";
 import { makeSeedMetrics, makeSeedPlan, seedCoaches, seedPlans, seedPrograms, seedPublicStats } from "./seed";
 import type {
   Coach,
@@ -82,6 +82,7 @@ const mapUser = (r: Raw): User => ({
   name: str(r.name, str(r.email).split("@")[0]),
   email: str(r.email),
   role: (["admin", "coach"].includes(str(r.role)) ? r.role : "member") as Role,
+  ...(r.isDemo === true ? { readOnly: true } : {}),
 });
 
 const mapMember = (r: Raw): Member => {
@@ -233,11 +234,8 @@ export async function sendContact(input: ContactInput): Promise<{ source: "api" 
 type StoredSession = Session & { refreshToken?: string };
 
 const saveSession = (s: StoredSession): Session => {
-  try {
-    localStorage.setItem(sessionStorageKey, JSON.stringify(s));
-  } catch {
-    /* storage blocked: session lasts for this page only */
-  }
+  // Falls back to memory when storage is blocked (e.g. inside a cross-site iframe).
+  safeStorage.set(sessionStorageKey, JSON.stringify(s));
   window.dispatchEvent(new Event("pulsa-session"));
   return s;
 };
@@ -245,11 +243,12 @@ const saveSession = (s: StoredSession): Session => {
 export const loadSession = (): Session | null => {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(sessionStorageKey);
+    const raw = safeStorage.get(sessionStorageKey);
     const s = raw ? (JSON.parse(raw) as Session) : null;
-    // A demo session left over from demo mode is not valid once a real API is configured.
-    if (s?.demo && !DEMO_MODE) {
-      localStorage.removeItem(sessionStorageKey);
+    // A demo session left over from demo mode is not valid once a real API is configured
+    // (the "Demo admin" sandbox is the exception: it is started on purpose while the API is down).
+    if (s?.demo && !DEMO_MODE && !s.sandbox) {
+      safeStorage.remove(sessionStorageKey);
       return null;
     }
     return s;
@@ -261,11 +260,7 @@ export const loadSession = (): Session | null => {
 export const logout = () => {
   const refreshToken = readRefreshToken();
   if (refreshToken) void request("/auth/logout", { method: "POST", body: { refreshToken }, auth: false }).catch(() => {});
-  try {
-    localStorage.removeItem(sessionStorageKey);
-  } catch {
-    /* ignore */
-  }
+  safeStorage.remove(sessionStorageKey);
   window.dispatchEvent(new Event("pulsa-session"));
 };
 
@@ -297,6 +292,34 @@ export async function login(email: string, password: string): Promise<Session> {
       throw new ApiError(WAKING_UP, 503);
     }
     if (err instanceof ApiError && err.status === 401) throw new ApiError("Wrong email or password.", 401, err.code);
+    throw err;
+  }
+}
+
+/**
+ * Public read-only demo admin, seeded by `npm run seed:demo-admin` (backend/src/seed/demoAdmin.ts).
+ * The password is public by design: the API refuses every write from this account.
+ */
+export const DEMO_ADMIN = { email: "demo-admin@pulsa.example", password: "pulsa-demo-admin" } as const;
+
+/**
+ * "Demo admin" button. With the API up: signs in as the read-only demo admin (writes get 403).
+ * With the API down or not configured: an in-browser sandbox admin on the bundled demo copy,
+ * so the admin works in the portfolio iframe even while the free server sleeps.
+ */
+export async function loginDemoAdmin(): Promise<Session> {
+  try {
+    return saveSession(toSession(await request("/auth/login", { method: "POST", body: DEMO_ADMIN, auth: false })));
+  } catch (err) {
+    // Unreachable, or reachable but not seeded yet / rate limited: fall back to the sandbox.
+    if (err instanceof ApiUnavailable || err instanceof ApiError) {
+      return saveSession({
+        token: "demo",
+        demo: true,
+        sandbox: true,
+        user: { id: "demo-admin", email: DEMO_ADMIN.email, name: "Demo Admin", role: "admin" },
+      });
+    }
     throw err;
   }
 }

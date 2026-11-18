@@ -114,7 +114,8 @@ describe("seeded dashboard", () => {
     expect(s.members).toMatchObject({ total: 10, active: 5, expired: 3, passive: 2, blacklisted: 1 });
     expect(s.membershipTypes).toEqual({ Year: 3, Monthly: 7 });
     expect(s.staff.total).toBe(8);
-    expect(s.users).toMatchObject({ admin: 1, coach: 1 });
+    // the seeded admin + the read-only demo admin
+    expect(s.users).toMatchObject({ admin: 2, coach: 1 });
     expect(s.remainingAccesses).toHaveLength(10);
     const capped = await api().get("/api/v1/admin/stats?remainingLimit=3").set(seededAdmin).expect(200);
     expect(capped.body.data.remainingAccesses.map((r: { memberCode: string }) => r.memberCode)).toEqual(["C123456", "C654321", "C654322"]);
