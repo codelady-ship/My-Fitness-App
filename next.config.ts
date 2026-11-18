@@ -12,6 +12,12 @@ const apiOrigin = (() => {
 })();
 
 /**
+ * Origins allowed to show Pulsa in an iframe. CSP frame-ancestors is the only framing control:
+ * X-Frame-Options cannot express an allow-list, and modern browsers ignore it when frame-ancestors is set.
+ */
+const FRAME_ANCESTORS = ["'self'", "https://antiqa-portfolio.vercel.app", "https://antiqacode.vercel.app"];
+
+/**
  * Content Security Policy. Everything (fonts via next/font, videos, images) is served from this origin.
  * 'unsafe-inline' for scripts is needed by the App Router's inline hydration scripts without per-request
  * nonces (nonces would make every page dynamic and drop the static/ISR pages); 'unsafe-inline' for styles
@@ -28,7 +34,8 @@ const csp = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'none'",
+  // Only the owner's portfolio may embed the demo (its project modal shows it in an iframe).
+  `frame-ancestors ${FRAME_ANCESTORS.join(" ")}`,
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -41,7 +48,6 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "X-Frame-Options", value: "DENY" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
         ],
       },
