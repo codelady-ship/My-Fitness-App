@@ -6,6 +6,7 @@ import { showAddUserModal } from "./Modals/addUserModal";
 import { showUserCardModal } from "./Modals/userCardClick";
 import PageHeader from "@/src/Components/PageHeader";
 import Avatar from "@/src/Components/Avatar";
+import Select from "@/src/Components/pulsa/Select";
 import { formatDate } from "@/lib/utils";
 
 const STATUSES = ["all", "active", "passive", "expired"] as const;
@@ -43,13 +44,13 @@ const Users = () => {
         <label className="sr-only" htmlFor="status">
           Filter by status
         </label>
-        <select id="status" className="input" value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
+        <Select id="status" className="input" value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
           {STATUSES.map((s) => (
             <option key={s} value={s}>
               {s === "all" ? "All statuses" : s[0].toUpperCase() + s.slice(1)}
             </option>
           ))}
-        </select>
+        </Select>
         <button type="button" onClick={() => showAddUserModal(darkMode)} className="btn btn-coral">
           + Add member
         </button>

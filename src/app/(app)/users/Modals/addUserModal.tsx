@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import { ICard } from "@/Interface/card";
 import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import { bindAvatarInput, daysAgo, DEFAULT_AVATAR, esc } from "@/lib/utils";
-import { swalTheme, fieldStyle, labelStyle } from "./theme";
+import { swalTheme, fieldStyle, labelStyle, styleSelects } from "./theme";
 
 export const showAddUserModal = async (darkMode: boolean) => {
   const f = fieldStyle(darkMode);
@@ -46,7 +46,10 @@ export const showAddUserModal = async (darkMode: boolean) => {
         </div>
         <label style="${labelStyle}">Goal<input id="au-goals" style="${f}" placeholder="e.g. Lose weight"></label>
       </div>`,
-    didOpen: () => bindAvatarInput("au-image", "au-preview"),
+    didOpen: () => {
+      bindAvatarInput("au-image", "au-preview");
+      styleSelects();
+    },
     preConfirm: async () => {
       const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
       const fullName = val("au-name");
