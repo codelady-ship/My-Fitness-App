@@ -30,38 +30,51 @@ function readToken(req: Request): AuthUser | null {
 }
 
 const READ_METHODS = ["GET", "HEAD", "OPTIONS"];
-/** Lists with real visitors' personal data (accounts, contact form, newsletter): never shown to the public demo login. */
-const DEMO_HIDDEN = ["/api/v1/users", "/api/v1/contact", "/api/v1/newsletter"];
+
+const demoReadOnly = () =>
+  new ApiError(403, "DEMO_READ_ONLY", "This is a read-only demo admin: changes are not saved.");
 
 /**
- * The public demo admin (isDemo user, `demo: true` in its token) may look but not touch:
- * every write is refused with 403 DEMO_READ_ONLY, and lists with visitors' personal data stay hidden.
+ * The public demo admin (isDemo user, `demo: true` in its token) is denied by default.
+ *
+ * There is no list of forbidden URLs to keep in sync with the routes (and to get wrong on case,
+ * trailing slashes or encoding): the rule lives on the route itself, so the only matching is Express's own.
+ * - `requireAuth` refuses the demo token outright. Every authenticated route starts here.
+ * - `requireAuthDemoReadable` is the allow-list: only routes mounted behind it can be read by the demo
+ *   token, and even there only with GET/HEAD. A write is 403 DEMO_READ_ONLY everywhere.
+ * - `optionalAuth` routes are public pages: the demo token gets the anonymous answer, nothing more.
  */
-function demoGuard(req: Request, user: AuthUser) {
-  if (!user.demo) return;
-  if (!READ_METHODS.includes(req.method)) {
-    throw new ApiError(403, "DEMO_READ_ONLY", "This is a read-only demo admin: changes are not saved.");
-  }
-  const path = (req.originalUrl.split("?")[0] ?? "").replace(/\/+$/, "");
-  if (DEMO_HIDDEN.some((p) => path === p || path.startsWith(p + "/")) || "userId" in req.query) {
-    throw ApiError.forbidden("The demo admin cannot see visitors' personal data.");
-  }
-}
-
-/** Requires a valid access token. */
-export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+function authenticate(req: Request, demoMayRead: boolean) {
   const user = readToken(req);
   if (!user) throw ApiError.unauthorized();
-  demoGuard(req, user);
+  if (user.demo) {
+    if (!READ_METHODS.includes(req.method)) throw demoReadOnly();
+    if (!demoMayRead) throw ApiError.forbidden("The demo admin cannot open this.");
+  }
   req.user = user;
+}
+
+/** Requires a valid access token. The read-only demo admin is refused (see `requireAuthDemoReadable`). */
+export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+  authenticate(req, false);
   next();
 }
 
-/** Attaches req.user when a valid token is present; anonymous otherwise. */
+/**
+ * Requires a valid access token; the demo admin may read (GET/HEAD) here and can never write.
+ * Use only on routes whose answers hold no visitors' personal data.
+ */
+export function requireAuthDemoReadable(req: Request, _res: Response, next: NextFunction) {
+  authenticate(req, true);
+  next();
+}
+
+/** Attaches req.user when a valid token is present; anonymous otherwise. The demo admin stays anonymous. */
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
   const user = readToken(req);
-  if (user) {
-    demoGuard(req, user);
+  if (user?.demo) {
+    if (!READ_METHODS.includes(req.method)) throw demoReadOnly();
+  } else if (user) {
     req.user = user;
   }
   next();

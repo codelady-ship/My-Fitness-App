@@ -52,7 +52,7 @@ shown as a friendly message). When the API is unreachable or not configured, it 
 the demo copy instead, with a visible "Demo mode: changes are not saved" note. Sessions are kept in localStorage with
 an in-memory fallback, so the admin also works inside a cross-site iframe where storage is blocked.
 
-Security headers: a Content Security Policy (`connect-src` limited to this site and the API origin), `nosniff`, `frame-ancestors 'none'`, a strict referrer policy and a permissions policy are set in `next.config.ts`.
+Security headers: a Content Security Policy (`connect-src` limited to this site and the API origin), `nosniff`, `frame-ancestors` limited to this site and the owner's portfolio, a strict referrer policy and a permissions policy are set in `next.config.ts`.
 
 ## Run locally
 

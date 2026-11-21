@@ -31,8 +31,9 @@ npm run dev                 # http://localhost:4000/api/v1/health
 | demo admin (read-only) | `demo-admin@pulsa.example` | `pulsa-demo-admin` (public on purpose) |
 
 The **demo admin** is the public login behind the "Demo admin" button (the portfolio embeds it). It has the
-admin role but `isDemo: true`: the API answers every write with `403 DEMO_READ_ONLY` and hides lists with
-visitors' personal data (`/users`, `/contact`, `/newsletter`, other users' metrics). `npm run seed:demo-admin`
+admin role but `isDemo: true`: the API answers every write with `403 DEMO_READ_ONLY`, and reads are
+denied by default: only routes mounted behind `requireAuthDemoReadable` (members, staff, admin stats, its own
+profile, metrics and plan) answer it, so `/users`, `/contact`, `/newsletter` and other users' metrics stay hidden. `npm run seed:demo-admin`
 (or `seed:demo-admin:prod` after a build) adds or resets only this account, without wiping anything.
 
 The demo member has 90 days of heart data (30 days with a full heart-rate series);

@@ -6,7 +6,7 @@ import { addDays, today } from "../lib/dates";
 import { ApiError } from "../lib/errors";
 import { escapeRegex, pageMeta, paginationQuery, sortSpec } from "../lib/pagination";
 import { boolQuery, dateString, objectId, parse } from "../lib/validate";
-import { requireAuth, requireRole } from "../middleware/auth";
+import { requireAuthDemoReadable, requireRole } from "../middleware/auth";
 import { ContactMessage } from "../models/ContactMessage";
 import { Member, MEMBER_STATUSES, MEMBERSHIP_TYPES } from "../models/Member";
 import { NewsletterSubscriber } from "../models/NewsletterSubscriber";
@@ -66,7 +66,7 @@ async function newMemberCode(): Promise<string> {
 }
 
 export const membersRouter = Router();
-membersRouter.use(requireAuth, requireRole("coach", "admin"));
+membersRouter.use(requireAuthDemoReadable, requireRole("coach", "admin"));
 
 membersRouter.get("/", async (req, res) => {
   const q = parse(memberList, req.query);
@@ -168,7 +168,7 @@ const staffList = z.object({
 const idParams = z.object({ id: objectId });
 
 export const staffRouter = Router();
-staffRouter.use(requireAuth, requireRole("coach", "admin"));
+staffRouter.use(requireAuthDemoReadable, requireRole("coach", "admin"));
 
 staffRouter.get("/", async (req, res) => {
   const q = parse(staffList, req.query);
@@ -230,7 +230,7 @@ const countBy = async <T extends string>(
 };
 
 export const adminRouter = Router();
-adminRouter.use(requireAuth, requireRole("coach", "admin"));
+adminRouter.use(requireAuthDemoReadable, requireRole("coach", "admin"));
 
 adminRouter.get("/stats", async (req, res) => {
   // remainingAccesses is a chart list, so it is capped (members.total gives the full count).

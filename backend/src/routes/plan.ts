@@ -3,7 +3,7 @@ import { z } from "zod";
 import { addDays, today } from "../lib/dates";
 import { ApiError } from "../lib/errors";
 import { dateString, parse } from "../lib/validate";
-import { requireAuth } from "../middleware/auth";
+import { requireAuthDemoReadable } from "../middleware/auth";
 import { MetricDay } from "../models/MetricDay";
 import { Program } from "../models/Program";
 import { User } from "../models/User";
@@ -14,7 +14,7 @@ const query = z.object({ date: dateString.optional() });
 
 export const planRouter = Router();
 
-planRouter.get("/today", requireAuth, async (req, res) => {
+planRouter.get("/today", requireAuthDemoReadable, async (req, res) => {
   const { date = today() } = parse(query, req.query);
   const user = await User.findById(req.user!.id);
   if (!user) throw ApiError.unauthorized("Account no longer exists");
