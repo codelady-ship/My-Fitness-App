@@ -9,7 +9,7 @@ export const swalTheme = (darkMode: boolean) => ({
 });
 
 export const fieldStyle = (darkMode: boolean) =>
-  `width:100%;min-height:44px;margin:0;box-sizing:border-box;padding:.6rem;border-radius:.5rem;border:1px solid ${
+  `width:100%;margin:0;box-sizing:border-box;padding:.6rem;border-radius:.5rem;border:1px solid ${
     darkMode ? "#4b5563" : "#d1d5db"
   };background:${darkMode ? "#1f2937" : "#fff"};color:inherit;font:inherit`;
 

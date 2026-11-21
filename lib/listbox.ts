@@ -25,6 +25,12 @@ export function enhanceSelect(select: HTMLSelectElement): () => void {
   // same classes and inline styles as the select, so it sits in the layout exactly like the field it replaces
   button.className = `${select.className} listbox-button`.trim();
   button.style.cssText = select.style.cssText;
+  // exactly as tall as the select it stands in for, so nothing around it moves
+  const height = select.getBoundingClientRect().height;
+  if (height) {
+    button.style.boxSizing = "border-box";
+    button.style.minHeight = `${height}px`;
+  }
   button.setAttribute("role", "combobox");
   button.setAttribute("aria-haspopup", "listbox");
   button.setAttribute("aria-expanded", "false");

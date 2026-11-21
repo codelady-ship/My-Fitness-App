@@ -312,7 +312,6 @@ textarea.input {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 44px;
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
@@ -1203,7 +1202,7 @@ textarea.input {
 }
 .status-active {
   background: rgba(34, 160, 107, 0.14);
-  color: #136a45; /* 4.5:1 on the pill */
+  color: #17794f;
 }
 .status-passive {
   background: rgba(22, 33, 58, 0.08);
@@ -1542,23 +1541,4 @@ textarea.input {
     inset: -7px;
     border-radius: 50%;
   }
-}
-
-/* Dashboard text sharpness. The cards and panels here lie on the plain page wash, where the glass blur
-   has nothing to blur, but backdrop-filter still puts each card on its own translucent layer and the
-   browser then draws its text without subpixel antialiasing (it looks soft on Windows). Same for the
-   entrance animation: filled forwards, it left an (identity) transform on every panel for good. */
-.app-main .glass,
-.app-main .glass-solid,
-.app-main .glass-card {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-.app-main .pop {
-  animation-fill-mode: backwards;
-}
-
-/* Secondary text in the dashboard: 62% ink measured 4.2 to 4.49:1 on the tinted pills and cards, just under AA. */
-.app {
-  --ink-2: rgba(22, 33, 58, 0.7);
 }

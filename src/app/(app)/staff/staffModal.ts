@@ -16,7 +16,7 @@ export const showStaffForm = async (
   save: (data: IStaff) => Promise<IStaff>,
 ): Promise<IStaff | null> => {
   const m: Partial<IStaff> = member ?? { gender: "female", jobType: "Trainer" };
-  const field = `width:100%;min-height:44px;margin:0;box-sizing:border-box;padding:.6rem;border-radius:.5rem;border:1px solid ${
+  const field = `width:100%;margin:0;box-sizing:border-box;padding:.6rem;border-radius:.5rem;border:1px solid ${
     darkMode ? "#4b5563" : "#d1d5db"
   };background:${darkMode ? "#1f2937" : "#fff"};color:inherit;font:inherit`;
   const label = "display:flex;flex-direction:column;gap:.25rem;text-align:left;font-size:.9rem;font-weight:600";
