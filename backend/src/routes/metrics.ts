@@ -5,7 +5,7 @@ import { addDays, diffDays, today } from "../lib/dates";
 import { ApiError } from "../lib/errors";
 import { pageMeta } from "../lib/pagination";
 import { boolQuery, dateString, objectId, parse } from "../lib/validate";
-import { isStaffRole, requireAuth } from "../middleware/auth";
+import { isStaffRole, requireAuthDemoReadable } from "../middleware/auth";
 import { Coach } from "../models/Coach";
 import { MetricDay, normalizeSeries } from "../models/MetricDay";
 import { User } from "../models/User";
@@ -73,6 +73,8 @@ const NO_SERIES = { heartRate: 0 } as const;
  */
 async function targetUser(req: Request, userId?: string): Promise<Types.ObjectId> {
   if (!userId || userId === req.user!.id) return new Types.ObjectId(req.user!.id);
+  // The public demo admin reads its own sample metrics only, never another account's.
+  if (req.user!.demo) throw ApiError.forbidden("The demo admin cannot see visitors' personal data.");
   const role = req.user!.role;
   if (!isStaffRole(role)) throw ApiError.forbidden("Only coaches and admins can read other users' metrics");
   if (role === "admin") {
@@ -108,7 +110,7 @@ function toUpdate(fields: z.infer<typeof metricFields>) {
 }
 
 export const metricsRouter = Router();
-metricsRouter.use(requireAuth);
+metricsRouter.use(requireAuthDemoReadable);
 
 metricsRouter.put("/days/:date", async (req, res) => {
   const { date } = parse(dateParams, req.params);

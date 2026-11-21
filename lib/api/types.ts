@@ -12,6 +12,8 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  /** the public "Demo admin": the API refuses its writes (403 DEMO_READ_ONLY) */
+  readOnly?: boolean;
 }
 
 export interface Session {
@@ -19,6 +21,8 @@ export interface Session {
   user: User;
   /** true when the API was unreachable and the session only exists in this browser */
   demo: boolean;
+  /** "Demo admin" started while the API was unreachable: works on the in-browser demo copy, nothing reaches the server */
+  sandbox?: boolean;
 }
 
 export type Level = "Beginner" | "Intermediate" | "Advanced";

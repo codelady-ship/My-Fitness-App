@@ -7,15 +7,16 @@ import type { Role } from "../models/User";
 
 const hash = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 
-export function signAccessToken(userId: string, role: Role) {
-  return jwt.sign({ role }, config.jwtSecret, {
+/** `demo` marks the public read-only showcase login; the auth middleware refuses its writes. */
+export function signAccessToken(userId: string, role: Role, demo = false) {
+  return jwt.sign(demo ? { role, demo: true } : { role }, config.jwtSecret, {
     subject: userId,
     expiresIn: config.accessTtl,
     algorithm: "HS256",
   });
 }
 
-export async function issueTokens(user: { _id: Types.ObjectId; role: Role }) {
+export async function issueTokens(user: { _id: Types.ObjectId; role: Role; isDemo?: boolean | null }) {
   const refreshToken = crypto.randomBytes(48).toString("base64url");
   await RefreshToken.create({
     userId: user._id,
@@ -23,7 +24,7 @@ export async function issueTokens(user: { _id: Types.ObjectId; role: Role }) {
     expiresAt: new Date(Date.now() + config.refreshTtlDays * 86_400_000),
   });
   return {
-    accessToken: signAccessToken(String(user._id), user.role),
+    accessToken: signAccessToken(String(user._id), user.role, !!user.isDemo),
     refreshToken,
     expiresIn: config.accessTtl,
   };

@@ -13,6 +13,8 @@
     "start": "node dist/server.js",
     "seed": "tsx src/seed/seed.ts",
     "seed:prod": "node dist/seed/seed.js",
+    "seed:demo-admin": "tsx src/seed/demo-admin.ts",
+    "seed:demo-admin:prod": "node dist/seed/demo-admin.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

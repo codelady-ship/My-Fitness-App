@@ -6,6 +6,7 @@ export type ErrorCode =
   | "NOT_FOUND"
   | "CONFLICT"
   | "RATE_LIMITED"
+  | "DEMO_READ_ONLY"
   | "INTERNAL_ERROR";
 
 export type ErrorDetail = { path: string; message: string };

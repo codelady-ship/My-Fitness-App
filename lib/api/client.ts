@@ -41,12 +41,52 @@ export class ApiUnavailable extends Error {
 let downUntil = 0;
 export const COOL_DOWN_MS = 30_000;
 
+/**
+ * localStorage with an in-memory fallback. Inside a cross-site iframe (the portfolio embeds the admin)
+ * a browser may block storage; the session then lives in memory and survives client-side navigation.
+ */
+const memory = new Map<string, string>();
+export const safeStorage = {
+  get(key: string): string | null {
+    try {
+      const v = localStorage.getItem(key);
+      if (v !== null) return v;
+    } catch {
+      /* storage blocked */
+    }
+    return memory.get(key) ?? null;
+  },
+  set(key: string, value: string) {
+    memory.set(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* storage blocked: the in-memory copy is used */
+    }
+  },
+  remove(key: string) {
+    memory.delete(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  },
+};
+
+/** The same, shaped for zustand persist (createJSONStorage). */
+export const safeStateStorage = {
+  getItem: (key: string) => safeStorage.get(key),
+  setItem: (key: string, value: string) => safeStorage.set(key, value),
+  removeItem: (key: string) => safeStorage.remove(key),
+};
+
 type Stored = { token?: string; refreshToken?: string; demo?: boolean };
 
 const readStored = (): Stored | null => {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = safeStorage.get(SESSION_KEY);
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {
     return null;
@@ -66,11 +106,7 @@ export const readRefreshToken = (): string | null => {
 /** Clear the stored session and send the visitor to the login page. */
 function expireSession() {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.removeItem(SESSION_KEY);
-  } catch {
-    /* ignore */
-  }
+  safeStorage.remove(SESSION_KEY);
   window.dispatchEvent(new Event("pulsa-session"));
   if (!window.location.pathname.startsWith("/login")) window.location.assign("/login?expired=1");
 }
@@ -96,7 +132,7 @@ async function refreshAccessToken(): Promise<boolean> {
         const json = await res.json();
         const data = json?.data;
         if (!data?.accessToken) return false;
-        localStorage.setItem(
+        safeStorage.set(
           SESSION_KEY,
           JSON.stringify({ ...stored, token: data.accessToken, refreshToken: data.refreshToken ?? stored.refreshToken }),
         );

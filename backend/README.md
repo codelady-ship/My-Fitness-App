@@ -28,6 +28,13 @@ npm run dev                 # http://localhost:4000/api/v1/health
 | member | `demo@pulsa.example`  | `SEED_DEMO_PASSWORD` (default `pulsa-demo-2026`) |
 | coach  | `coach@pulsa.example` | `SEED_COACH_PASSWORD` — if empty, the seed prints a random one (never the demo password: coaches can read their clients' data) |
 | admin  | `SEED_ADMIN_EMAIL` (default `admin@pulsa.example`) | `SEED_ADMIN_PASSWORD` — if empty, the seed prints a random one |
+| demo admin (read-only) | `demo-admin@pulsa.example` | `pulsa-demo-admin` (public on purpose) |
+
+The **demo admin** is the public login behind the "Demo admin" button (the portfolio embeds it). It has the
+admin role but `isDemo: true`: the API answers every write with `403 DEMO_READ_ONLY`, and reads are
+denied by default: only routes mounted behind `requireAuthDemoReadable` (members, staff, admin stats, its own
+profile, metrics and plan) answer it, so `/users`, `/contact`, `/newsletter` and other users' metrics stay hidden. `npm run seed:demo-admin`
+(or `seed:demo-admin:prod` after a build) adds or resets only this account, without wiping anything.
 
 The demo member has 90 days of heart data (30 days with a full heart-rate series);
 today's numbers match the landing page hero: **72 bpm, 24k steps, 1.32 recovery**.
@@ -40,6 +47,7 @@ today's numbers match the landing page hero: **72 bpm, 24k steps, 1.32 recovery*
 | `npm run build` | compile to `dist/` |
 | `npm start` | run `dist/server.js` |
 | `npm run seed` | wipe + seed (dev, TypeScript) |
+| `npm run seed:demo-admin` / `seed:demo-admin:prod` | add or reset only the read-only demo admin (no wipe) |
 | `npm run seed:prod -- --force` | wipe + seed from `dist/` (`--force` and `SEED_DEMO_PASSWORD` are required when `NODE_ENV=production`) |
 | `npm test` | supertest + vitest against an in-memory MongoDB (set `MONGO_TEST_URI` to use a real one) |
 | `npm run typecheck` | `tsc --noEmit` |

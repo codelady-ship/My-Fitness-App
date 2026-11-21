@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { ApiError } from "../lib/errors";
 import { dateString, email, objectId, parse } from "../lib/validate";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireAuthDemoReadable } from "../middleware/auth";
 import { Coach } from "../models/Coach";
 import { User } from "../models/User";
 import { consumeRefreshToken, issueTokens, revokeAllForUser } from "../services/tokens";
@@ -73,7 +73,7 @@ export function authRouter(authLimiter: RequestHandler) {
     res.status(204).end();
   });
 
-  router.get("/me", requireAuth, async (req, res) => {
+  router.get("/me", requireAuthDemoReadable, async (req, res) => {
     const user = await User.findById(req.user!.id);
     if (!user) throw ApiError.unauthorized("Account no longer exists");
     res.json({ data: user });

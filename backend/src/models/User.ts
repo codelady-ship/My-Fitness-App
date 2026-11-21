@@ -9,6 +9,8 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ROLES, default: "member", index: true },
+    /** Public read-only showcase login (the portfolio's "Demo admin"): every write is refused server-side. */
+    isDemo: { type: Boolean, default: false },
     avatarUrl: { type: String, default: "" },
     birthDate: { type: String, default: null },
     gender: { type: String, enum: ["male", "female", "other", null], default: null },

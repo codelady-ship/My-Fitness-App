@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Sidebar from "../Sidebar";
 import useSidebarStore from "../../../Store/SidebarStore";
 import useDataStore from "../../../Store/DataStore";
+import { useSession } from "../pulsa/useSession";
 
 /**
  * Client wrapper for the dashboard area: reads saved data from localStorage (then the API)
@@ -12,6 +13,14 @@ import useDataStore from "../../../Store/DataStore";
 export default function ClientShell({ children }: { children: React.ReactNode }) {
   const setMobileOpen = useSidebarStore((s) => s.setMobileOpen);
   const pathname = usePathname();
+  const { session } = useSession();
+  // Visible note for the public demo: the sandbox (API down) keeps changes in this browser only;
+  // the read-only demo admin (API up) has every write refused by the server.
+  const demoNote = session?.user.readOnly
+    ? "Demo admin (read-only): changes are not saved."
+    : session?.demo
+      ? "Demo mode: changes stay in this browser and are not saved to a server."
+      : null;
 
   useEffect(() => {
     useSidebarStore.persist.rehydrate();
@@ -36,6 +45,11 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     <div className="app">
       <Sidebar />
       <main id="main" className="app-main">
+        {demoNote && (
+          <p role="status" className="badge badge-coral demo-note">
+            {demoNote}
+          </p>
+        )}
         {children}
       </main>
     </div>
