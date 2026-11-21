@@ -3,6 +3,7 @@ import { IStaff } from "@/Interface/staff";
 import { JOB_TYPES } from "@/Mock/staff";
 import { bindAvatarInput, DEFAULT_AVATAR, esc } from "@/lib/utils";
 import { writeErrorMessage } from "@/Store/DataStore";
+import { enhanceSelects } from "@/lib/listbox";
 
 /**
  * Add / edit form for a staff member in a SweetAlert2 popup.
@@ -58,7 +59,10 @@ export const showStaffForm = async (
           </label>
         </div>
       </div>`,
-    didOpen: () => bindAvatarInput("sf-image", "sf-preview"),
+    didOpen: () => {
+      bindAvatarInput("sf-image", "sf-preview");
+      enhanceSelects(Swal.getHtmlContainer());
+    },
     preConfirm: async () => {
       const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
       const preview = document.getElementById("sf-preview") as HTMLImageElement;

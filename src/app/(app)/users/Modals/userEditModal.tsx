@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import { ICard } from "@/Interface/card";
 import useDataStore, { writeErrorMessage } from "@/Store/DataStore";
 import { bindAvatarInput, DEFAULT_AVATAR, esc } from "@/lib/utils";
-import { swalTheme, fieldStyle, labelStyle } from "./theme";
+import { swalTheme, fieldStyle, labelStyle, styleSelects } from "./theme";
 
 export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
   const f = fieldStyle(darkMode);
@@ -61,7 +61,10 @@ export const showEditUserModal = async (card: ICard, darkMode: boolean) => {
           <input type="checkbox" id="eu-isBlacklisted" ${card.isBlacklisted ? "checked" : ""}> Blacklisted
         </label>
       </div>`,
-    didOpen: () => bindAvatarInput("eu-image", "eu-preview"),
+    didOpen: () => {
+      bindAvatarInput("eu-image", "eu-preview");
+      styleSelects();
+    },
     preConfirm: async () => {
       const val = (id: string) => (document.getElementById(`eu-${id}`) as HTMLInputElement).value.trim();
       const fullName = val("fullName");

@@ -305,6 +305,108 @@ textarea.input {
   min-height: 140px;
   resize: vertical;
 }
+/* ---------- listbox (lib/listbox.ts): the dashboard's replacement for the browser's <select> list ---------- */
+
+.listbox-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.listbox-button::after {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: -4px 2px 0 0;
+  border: solid var(--ink-2);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.listbox-button[aria-expanded="true"] {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 4px rgba(255, 106, 85, 0.18);
+}
+.listbox-button[aria-expanded="true"]::after {
+  margin-top: 4px;
+  transform: rotate(-135deg);
+}
+.listbox-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* all labels share one grid cell: the button is as wide as the longest option and never clips the current one */
+.listbox-value {
+  display: grid;
+  min-width: 0;
+}
+.listbox-value > span {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+.listbox-value > span[data-current] {
+  visibility: visible;
+}
+.toolbar .input.listbox-button {
+  flex: 0 0 auto;
+  min-width: 180px;
+  max-width: 100%;
+}
+.listbox {
+  position: fixed;
+  z-index: 1100; /* above SweetAlert2 dialogs (1060) */
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  border: 1px solid rgba(22, 33, 58, 0.14);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px -28px rgba(22, 33, 58, 0.45), 0 2px 8px rgba(22, 33, 58, 0.08);
+  font: 400 15px/1.3 var(--font-ui);
+  color: var(--ink);
+  text-align: left;
+}
+.listbox[hidden] {
+  display: none;
+}
+.listbox li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px 0 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.listbox li::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.listbox li[data-active] {
+  background: rgba(22, 33, 58, 0.07);
+}
+.listbox li[aria-selected="true"] {
+  font-weight: 600;
+}
+.listbox li[aria-selected="true"]::before {
+  background: var(--coral);
+}
+.listbox li[aria-disabled="true"] {
+  color: var(--ink-3);
+  cursor: default;
+}
+
 .field-error {
   font-weight: 500;
   font-size: 13px;
