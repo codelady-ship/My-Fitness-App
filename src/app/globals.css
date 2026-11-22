@@ -1,2 +1,8 @@
-@import "tailwindcss";
+/* Public site. The admin (src/app/(app)) has its own sheet, src/app/(app)/admin.css,
+   so Tailwind looks for class names here only in the files the public pages are made of. */
+@import "tailwindcss" source(none);
+@source "./(site)";
+@source "./layout.tsx";
+@source "./not-found.tsx";
+@source "../Components/pulsa";
 @import "../styles/pulsa.css";

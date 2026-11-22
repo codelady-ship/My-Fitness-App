@@ -1,14 +1,17 @@
 "use client";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { InfoIcon } from "lucide-react";
 import Sidebar from "../Sidebar";
+import { Toaster } from "../ui/sonner";
 import useSidebarStore from "../../../Store/SidebarStore";
 import useDataStore from "../../../Store/DataStore";
 import { useSession } from "../pulsa/useSession";
 
 /**
  * Client wrapper for the dashboard area: reads saved data from localStorage (then the API)
- * and renders the glass sidebar. Kept separate so layouts can stay Server Components.
+ * and renders the sidebar. Kept separate so layouts can stay Server Components.
+ * `.admin-shell` is what src/app/(app)/admin.css keys the white page and the admin tokens on.
  */
 export default function ClientShell({ children }: { children: React.ReactNode }) {
   const setMobileOpen = useSidebarStore((s) => s.setMobileOpen);
@@ -42,16 +45,18 @@ export default function ClientShell({ children }: { children: React.ReactNode })
   useEffect(() => setMobileOpen(false), [pathname, setMobileOpen]);
 
   return (
-    <div className="app">
+    <div className="admin-shell flex min-h-dvh bg-background text-foreground">
       <Sidebar />
-      <main id="main" className="app-main">
+      <main id="main" className="flex min-w-0 flex-1 flex-col">
         {demoNote && (
-          <p role="status" className="badge badge-coral demo-note">
+          <p role="status" className="flex items-start gap-2 border-b border-[#ffd9d2] bg-accent px-4 py-2.5 text-sm leading-snug font-medium text-[#8f2a1b] sm:px-6 lg:px-8">
+            <InfoIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
             {demoNote}
           </p>
         )}
-        {children}
+        <div className="flex-1 px-4 pb-12 sm:px-6 lg:px-8">{children}</div>
       </main>
+      <Toaster />
     </div>
   );
 }

@@ -34,6 +34,10 @@ export const viewport: Viewport = { themeColor: "#eef3fb", width: "device-width"
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${interTight.variable}`}>
+      <head>
+        {/* Pulsa is light-only by design; this asks the Dark Reader extension not to recolour it. */}
+        <meta name="darkreader-lock" />
+      </head>
       <body>
         <a href="#main" className="skip-link">
           Skip to content

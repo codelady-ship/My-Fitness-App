@@ -81,7 +81,7 @@ Interface/ Mock/       types and demo members/staff
 
 ## Tech stack
 
-Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 + custom CSS · Zustand · Chart.js · SweetAlert2 · react-icons
+Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 + custom CSS · shadcn/ui (Radix, admin only) · Zustand · Chart.js · react-icons
 
 ## What I learned
 

@@ -1,0 +1,103 @@
+/* =========================================================================
+   Pulsa admin (the app shell after login): shadcn/ui on a white page.
+
+   Loaded only by src/app/(app)/layout.tsx, so the public site's stylesheet
+   (globals.css + styles/pulsa.css) stays as it is. Tailwind is compiled here
+   a second time for the admin files only: theme + utilities, no preflight
+   (the global sheet already has it) and nothing that is not behind a class,
+   a --ui-* variable or `html:has(.admin-shell)`.
+   ========================================================================= */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "tw-animate-css";
+
+@source "./";
+@source "../../Components/ui";
+@source "../../Components/admin";
+@source "../../Components/Avatar";
+@source "../../Components/ClientShell";
+@source "../../Components/PageHeader";
+@source "../../Components/Sidebar";
+
+/* The admin is light only, like the public site (pulsa.css sets color-scheme: light):
+   shadcn's dark: classes need an explicit .dark ancestor, which is never set. */
+@custom-variant dark (&:is(.dark *));
+/* Controls are 44px tall by default; they tighten only on a wide screen with a mouse. */
+@custom-variant desk (@media (min-width: 64rem) and (pointer: fine));
+
+/* Pulsa on white. Prefixed so they cannot meet pulsa.css's own --card / --radius / --shadow. */
+:root {
+  --ui-background: #ffffff;
+  --ui-foreground: #16213a; /* --ink */
+  --ui-muted: #f4f5f8;
+  --ui-muted-foreground: #5b6477; /* 5.9:1 on white, 5.4:1 on --ui-muted */
+  --ui-border: #e4e7ee;
+  --ui-input: #c3c9d6;
+  --ui-primary: #ff6a55; /* --coral; ink text on it is 5.7:1 (white would be 2.9:1) */
+  --ui-primary-hover: #ff7d6a;
+  --ui-primary-foreground: #16213a;
+  --ui-accent: #fff0ed; /* coral tint */
+  --ui-accent-foreground: #16213a;
+  --ui-coral-ink: #c53a25; /* coral for text and focus rings: 5.0:1 on white */
+  --ui-destructive: #c8321f;
+  --ui-success: #17794f;
+}
+
+@theme inline {
+  --color-background: var(--ui-background);
+  --color-foreground: var(--ui-foreground);
+  --color-card: var(--ui-background);
+  --color-card-foreground: var(--ui-foreground);
+  --color-popover: var(--ui-background);
+  --color-popover-foreground: var(--ui-foreground);
+  --color-primary: var(--ui-primary);
+  --color-primary-hover: var(--ui-primary-hover);
+  --color-primary-foreground: var(--ui-primary-foreground);
+  --color-secondary: var(--ui-muted);
+  --color-secondary-foreground: var(--ui-foreground);
+  --color-muted: var(--ui-muted);
+  --color-muted-foreground: var(--ui-muted-foreground);
+  --color-accent: var(--ui-accent);
+  --color-accent-foreground: var(--ui-accent-foreground);
+  --color-coral-ink: var(--ui-coral-ink);
+  --color-destructive: var(--ui-destructive);
+  --color-success: var(--ui-success);
+  --color-border: var(--ui-border);
+  --color-input: var(--ui-input);
+  --color-ring: var(--ui-coral-ink);
+  --font-heading: var(--font-display);
+}
+
+@layer base {
+  /* shadcn's base rule (`* { @apply border-border }`), only while the admin shell is on the page.
+     Dialogs, selects and toasts are portalled to <body>, so the scope is the document, not the shell. */
+  html:has(.admin-shell) *,
+  html:has(.admin-shell) ::before,
+  html:has(.admin-shell) ::after {
+    border-color: var(--ui-border);
+  }
+}
+
+/* White page instead of the public site's pale blue wash. */
+html:has(.admin-shell),
+html:has(.admin-shell) body {
+  background: var(--ui-background);
+}
+html:has(.admin-shell) body::before {
+  content: none;
+}
+
+/* One focus ring for every admin control: coral, 2px, readable on white. pulsa.css rounds every
+   focused element to 10px for the public site; here the control keeps its own radius. */
+html:has(.admin-shell) :focus-visible {
+  outline: 2px solid var(--ui-coral-ink);
+  outline-offset: 2px;
+  border-radius: revert-layer;
+}
+/* Containers that take focus only to hand it on (dialog panel, open list) and the list's own
+   highlighted row do not get the ring. */
+html:has(.admin-shell) :is([role="dialog"], [role="alertdialog"], [role="listbox"], [role="option"]):focus-visible {
+  outline: none;
+}
