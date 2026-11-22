@@ -35,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${inter.variable} ${interTight.variable}`}>
       <head>
-        {/* Pulsa has one fixed light design; this asks the Dark Reader extension not to recolour it. */}
+        {/* Pulsa is light-only by design; this asks the Dark Reader extension not to recolour it. */}
         <meta name="darkreader-lock" />
       </head>
       <body>

@@ -5,6 +5,8 @@ import { cn } from "@/lib/cn"
 import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
+import { useReturnFocus } from "@/src/Components/ui/use-return-focus"
+
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
@@ -48,11 +50,15 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  // the drawer's links change the page, so there is no fallback: focus goes back to the menu button or nowhere
+  const returnFocus = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus, fallback: false })
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -71,6 +77,7 @@ function SheetContent({
           className
         )}
         {...props}
+        {...returnFocus}
       >
         {children}
         {showCloseButton && (
