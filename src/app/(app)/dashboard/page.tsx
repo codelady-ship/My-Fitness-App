@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
 import useDataStore from "@/Store/DataStore";
@@ -8,6 +7,13 @@ import PageHeader from "@/src/Components/PageHeader";
 import Gauge from "@/src/Components/pulsa/Gauge";
 import LineChart from "@/src/Components/pulsa/LineChart";
 import { CheckIcon } from "@/src/Components/pulsa/Icons";
+import ConfirmDialog from "@/src/Components/admin/ConfirmDialog";
+import StatusBadge from "@/src/Components/admin/StatusBadge";
+import { Badge } from "@/src/Components/ui/badge";
+import { Button } from "@/src/Components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/Components/ui/card";
+import { Skeleton } from "@/src/Components/ui/skeleton";
+import { cn } from "@/lib/cn";
 import { useSession } from "@/src/Components/pulsa/useSession";
 import { daysSince, formatDate } from "@/lib/utils";
 import { ICard } from "@/Interface/card";
@@ -35,6 +41,7 @@ const Dashboard = () => {
   const [plan, setPlan] = useState<PlanItem[]>(() => makeSeedPlan().items);
   const [metricsSource, setMetricsSource] = useState<"api" | "demo" | "loading">("loading");
   const [planLoading, setPlanLoading] = useState(true);
+  const [resetOpen, setResetOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -127,16 +134,6 @@ const Dashboard = () => {
     { label: "Cards ending in 7 days", value: expiringSoon },
   ];
 
-  const onReset = () => {
-    Swal.fire({
-      title: "Reset demo data?",
-      text: "Members and staff go back to the original demo list. Your changes in this browser are removed.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Reset",
-      confirmButtonColor: "#ff6a55",
-    }).then((r) => r.isConfirmed && resetDemoData());
-  };
 
   const history = metrics.history;
   const first = history[0]?.bpm ?? metrics.restingBpm;
@@ -146,62 +143,73 @@ const Dashboard = () => {
   // Members only see their own heart data; gym admin widgets are for coaches/admins (and demo visitors).
   const showAdmin = !session || session.user.role !== "member";
 
+
+  const metric = "rounded-xl bg-muted px-3.5 py-2.5";
+  const metricLabel = "text-xs text-muted-foreground";
+  const metricValue = "mt-0.5 font-heading text-lg leading-tight font-bold tabular-nums";
+
   return (
     <div>
       <PageHeader title={firstName ? `Hi, ${firstName}` : "Overview"}>
         {dataSource === "demo" && showAdmin && (
-          <button type="button" onClick={onReset} className="btn btn-ghost btn-sm">
+          <Button type="button" variant="outline" size="sm" onClick={() => setResetOpen(true)}>
             Reset demo data
-          </button>
+          </Button>
         )}
       </PageHeader>
 
-      <div className="dash-grid">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         {/* ---- heart metrics ---- */}
-        <section className="glass-card panel span-4 pop" style={{ ["--pop-delay" as string]: "0.05s" }} aria-labelledby="hr-title">
-          <div className="card-head">
-            <h2 id="hr-title">Cardio Insights</h2>
-            <span className="live-dot">{metricsSource === "api" ? "Live" : metricsSource === "loading" ? "Loading" : "Demo"}</span>
-          </div>
-          {metricsSource === "loading" ? (
-            <div aria-busy="true" aria-label="Loading heart metrics" style={{ display: "grid", gap: 12, marginTop: 14 }}>
-              <span className="skeleton" style={{ height: 150 }} />
-              <span className="skeleton" style={{ height: 54 }} />
-            </div>
-          ) : (
-            <>
-              <Gauge
-                key={metrics.restingBpm + "-" + metrics.zoneScore}
-                value={metrics.restingBpm}
-                percent={metrics.zoneScore}
-                delay={300}
-                label={`Resting heart rate ${metrics.restingBpm} bpm; ${metrics.zoneScore}% of today's target zone reached`}
-              />
-              <dl className="gauge-stats">
-                <div>
-                  <dt>Steps today</dt>
-                  <dd>{(metrics.steps / 1000).toFixed(metrics.steps >= 10000 ? 0 : 1)}k</dd>
-                </div>
-                <div>
-                  <dt>Recovery</dt>
-                  <dd>{metrics.recovery.toFixed(2)}</dd>
-                </div>
-              </dl>
-            </>
-          )}
-        </section>
-
-        <section className="glass panel span-8 pop" style={{ ["--pop-delay" as string]: "0.12s" }} aria-labelledby="trend-title">
-          <div className="card-head" style={{ flexWrap: "wrap" }}>
-            <h2 id="trend-title">Resting heart rate · last {history.length} days</h2>
-            <span className={`badge ${last < first ? "badge-coral" : ""}`}>
-              {last === first ? "Steady" : `${last < first ? "▼" : "▲"} ${Math.abs(first - last)} bpm`}
+        <Card className="xl:col-span-4" role="region" aria-labelledby="hr-title">
+          <CardHeader>
+            <CardTitle id="hr-title">Cardio Insights</CardTitle>
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground before:size-1.5 before:rounded-full before:bg-primary">
+              {metricsSource === "api" ? "Live" : metricsSource === "loading" ? "Loading" : "Demo"}
             </span>
-          </div>
-          {metricsSource === "loading" ? (
-            <span className="skeleton" aria-busy="true" aria-label="Loading trend" style={{ height: 200, marginTop: 14 }} />
-          ) : (
-            <div style={{ marginTop: 14 }}>
+          </CardHeader>
+          <CardContent>
+            {metricsSource === "loading" ? (
+              <div aria-busy="true" aria-label="Loading heart metrics" className="grid gap-3">
+                <Skeleton className="h-40" />
+                <Skeleton className="h-14" />
+              </div>
+            ) : (
+              <>
+                <div className="mx-auto max-w-80">
+                  <Gauge
+                    key={metrics.restingBpm + "-" + metrics.zoneScore}
+                    value={metrics.restingBpm}
+                    percent={metrics.zoneScore}
+                    delay={300}
+                    label={`Resting heart rate ${metrics.restingBpm} bpm; ${metrics.zoneScore}% of today's target zone reached`}
+                  />
+                </div>
+                <dl className="mt-4 grid grid-cols-2 gap-2.5">
+                  <div className={metric}>
+                    <dt className={metricLabel}>Steps today</dt>
+                    <dd className={metricValue}>{(metrics.steps / 1000).toFixed(metrics.steps >= 10000 ? 0 : 1)}k</dd>
+                  </div>
+                  <div className={metric}>
+                    <dt className={metricLabel}>Recovery</dt>
+                    <dd className={metricValue}>{metrics.recovery.toFixed(2)}</dd>
+                  </div>
+                </dl>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-8" role="region" aria-labelledby="trend-title">
+          <CardHeader>
+            <CardTitle id="trend-title">Resting heart rate · last {history.length} days</CardTitle>
+            <Badge variant={last < first ? "coral" : "default"}>
+              {last === first ? "Steady" : `${last < first ? "▼" : "▲"} ${Math.abs(first - last)} bpm`}
+            </Badge>
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col">
+            {metricsSource === "loading" ? (
+              <Skeleton aria-busy="true" aria-label="Loading trend" className="h-52" />
+            ) : (
               <LineChart
                 key={history.map((h) => h.bpm).join(",")}
                 values={history.map((h) => h.bpm)}
@@ -213,164 +221,173 @@ const Dashboard = () => {
                   history[history.length - 1]?.date ?? "",
                 )}`}
               />
-            </div>
-          )}
-          <dl className="gauge-stats" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-            <div>
-              <dt>HRV</dt>
-              <dd>{metrics.hrv} ms</dd>
-            </div>
-            <div>
-              <dt>Sleep</dt>
-              <dd>
-                {Math.floor(metrics.sleepMinutes / 60)}h {metrics.sleepMinutes % 60}m
-              </dd>
-            </div>
-            <div>
-              <dt>Zone score</dt>
-              <dd>{metrics.zoneScore}%</dd>
-            </div>
-          </dl>
-        </section>
+            )}
+            <dl className="mt-auto grid grid-cols-3 gap-2.5 pt-4">
+              <div className={metric}>
+                <dt className={metricLabel}>HRV</dt>
+                <dd className={metricValue}>{metrics.hrv} ms</dd>
+              </div>
+              <div className={metric}>
+                <dt className={metricLabel}>Sleep</dt>
+                <dd className={metricValue}>
+                  {Math.floor(metrics.sleepMinutes / 60)}h {metrics.sleepMinutes % 60}m
+                </dd>
+              </div>
+              <div className={metric}>
+                <dt className={metricLabel}>Zone score</dt>
+                <dd className={metricValue}>{metrics.zoneScore}%</dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
 
         {/* ---- daily plan ---- */}
-        <section
-          className={`glass panel ${showAdmin ? "span-5" : "span-12"} pop`}
-          style={{ ["--pop-delay" as string]: "0.18s" }}
-          aria-labelledby="plan-title"
-        >
-          <div className="card-head">
-            <h2 id="plan-title">Today&apos;s plan</h2>
-            <span className="badge">
+        <Card className={showAdmin ? "xl:col-span-5" : "xl:col-span-12"} role="region" aria-labelledby="plan-title">
+          <CardHeader>
+            <CardTitle id="plan-title">Today&apos;s plan</CardTitle>
+            <Badge>
               {doneCount}/{plan.length} done
-            </span>
-          </div>
-          {planLoading ? (
-            <span className="skeleton" style={{ height: 48, marginTop: 10 }} />
-          ) : (
-            <>
-              <p style={{ margin: "10px 0 0", display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "4px 10px" }}>
-                <strong className="display" style={{ fontSize: 22, letterSpacing: "-0.02em" }}>
-                  {day.headline}
-                </strong>
-                <span className="badge badge-coral" style={{ textTransform: "capitalize" }}>
-                  {day.intensity}
-                </span>
-              </p>
-              <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>
-                {[
-                  day.target,
-                  day.durationMinutes ? `${day.durationMinutes} min` : "",
-                  day.stepsGoal ? `${day.stepsGoal.toLocaleString("en-US")} steps goal` : "",
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            </>
-          )}
-          <ul className="plan-list" aria-busy={planLoading}>
-            {planLoading && [0, 1, 2].map((i) => <li key={i} className="skeleton" style={{ height: 54 }} />)}
-            {!planLoading &&
-              plan.map((p) => (
-                <li key={p.id} className={`plan-item${p.done ? " done" : ""}`}>
-                  <button
-                    type="button"
-                    className="check"
-                    aria-pressed={p.done}
-                    onClick={() => toggle(p)}
-                    aria-label={`Mark "${p.title}" as ${p.done ? "not done" : "done"}`}
-                  >
-                    {p.done && <CheckIcon size={14} />}
-                  </button>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="title" style={{ fontWeight: 600 }}>
-                      {p.title}
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            {planLoading ? (
+              <Skeleton className="h-12" />
+            ) : (
+              <>
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <strong className="font-heading text-[22px] leading-none font-extrabold tracking-[-0.02em] uppercase">{day.headline}</strong>
+                  <Badge variant="coral" className="capitalize">
+                    {day.intensity}
+                  </Badge>
+                </p>
+                <p className="mt-1.5 text-[13px] text-muted-foreground">
+                  {[
+                    day.target,
+                    day.durationMinutes ? `${day.durationMinutes} min` : "",
+                    day.stepsGoal ? `${day.stepsGoal.toLocaleString("en-US")} steps goal` : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </>
+            )}
+            <ul className="mt-4 grid gap-2" aria-busy={planLoading}>
+              {planLoading &&
+                [0, 1, 2].map((i) => (
+                  <li key={i}>
+                    <Skeleton className="h-14" />
+                  </li>
+                ))}
+              {!planLoading &&
+                plan.map((p) => (
+                  <li key={p.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border py-1 pr-3 pl-1">
+                    {/* 44px tap area around a 26px tick */}
+                    <button
+                      type="button"
+                      className="group grid size-11 cursor-pointer place-items-center rounded-full"
+                      aria-pressed={p.done}
+                      onClick={() => toggle(p)}
+                      aria-label={`Mark "${p.title}" as ${p.done ? "not done" : "done"}`}
+                    >
+                      <span
+                        className={cn(
+                          "grid size-[26px] place-items-center rounded-full border-2 text-white transition-colors",
+                          p.done ? "border-foreground bg-foreground" : "border-[#8891a4] bg-background group-hover:border-foreground",
+                        )}
+                      >
+                        {p.done && <CheckIcon size={13} />}
+                      </span>
+                    </button>
+                    <div className="min-w-0">
+                      <div className={cn("text-sm font-semibold", p.done && "text-muted-foreground line-through")}>{p.title}</div>
+                      <div className="text-[13px] text-muted-foreground">
+                        {p.minutes} min in zone {p.zone}
+                      </div>
                     </div>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      {p.minutes} min in zone {p.zone}
-                    </div>
-                  </div>
-                  <span className="badge badge-coral" title={`Heart-rate zone ${p.zone}`}>
-                    Z{p.zone} · {p.minutes}′
-                  </span>
-                </li>
-              ))}
-          </ul>
-          {!planLoading && day.reasons.length > 0 && (
-            <ul className="muted" style={{ margin: "12px 0 0", paddingLeft: 18, fontSize: 13, lineHeight: 1.6 }}>
-              {day.reasons.map((r) => (
-                <li key={r}>{r}</li>
-              ))}
+                    <Badge variant="coral" title={`Heart-rate zone ${p.zone}`}>
+                      Z{p.zone} · {p.minutes}′
+                    </Badge>
+                  </li>
+                ))}
             </ul>
-          )}
-        </section>
+            {!planLoading && day.reasons.length > 0 && (
+              <ul className="mt-3 list-disc pl-5 text-[13px] leading-relaxed text-muted-foreground">
+                {day.reasons.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
 
         {/* ---- gym overview: coaches, admins and demo visitors only ---- */}
         {showAdmin && (
           <>
-            <section
-              className="span-7"
-              aria-labelledby="gym-title"
-              style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignContent: "start" }}
-            >
+            <section className="grid grid-cols-2 gap-4 xl:col-span-7" aria-labelledby="gym-title">
               <h2 id="gym-title" className="sr-only">
                 Gym overview
               </h2>
-              {stats.map((s, i) => (
-                <div key={s.label} className="glass panel stat lift pop" style={{ ["--pop-delay" as string]: `${0.22 + i * 0.05}s` }}>
-                  <span className="label">{s.label}</span>
-                  <span className="value">{ready ? s.value : "–"}</span>
-                </div>
+              {stats.map((s) => (
+                <Card key={s.label} className="justify-between gap-3 px-5">
+                  <span className="text-[13px] leading-snug text-muted-foreground">{s.label}</span>
+                  <span className="font-heading text-4xl leading-none font-extrabold tracking-[-0.04em] tabular-nums">{ready ? s.value : "–"}</span>
+                </Card>
               ))}
             </section>
 
-            <section className="glass panel span-12 pop" style={{ ["--pop-delay" as string]: "0.4s" }} aria-labelledby="visits-title">
-              <div className="card-head" style={{ flexWrap: "wrap" }}>
-                <h2 id="visits-title">
-                  Remaining visits per member{" "}
-                  {dataSource === "demo" && (
-                    <span className="badge" style={{ marginLeft: 6 }}>
-                      Demo gym data
-                    </span>
-                  )}
-                </h2>
-                <span className="muted" style={{ fontSize: 13, display: "flex", gap: 14, flexWrap: "wrap" }}>
-                  <span className="status status-active">active</span>
-                  <span className="status status-passive">passive</span>
-                  <span className="status status-expired">expired</span>
+            <Card className="xl:col-span-12" role="region" aria-labelledby="visits-title">
+              <CardHeader>
+                <CardTitle id="visits-title" className="flex flex-wrap items-center gap-2">
+                  Remaining visits per member {dataSource === "demo" && <Badge>Demo gym data</Badge>}
+                </CardTitle>
+                <span className="flex flex-wrap gap-2">
+                  <StatusBadge tone="active">active</StatusBadge>
+                  <StatusBadge tone="passive">passive</StatusBadge>
+                  <StatusBadge tone="expired">expired</StatusBadge>
                 </span>
-              </div>
-              <div className="relative h-80 w-full" style={{ marginTop: 12 }}>
-                {ready && (
-                  <Bar
-                    data={chartData}
-                    aria-label="Bar chart of remaining visits per member, coloured by card status"
-                    role="img"
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: "#16213a", padding: 10, cornerRadius: 12, displayColors: false },
-                      },
-                      scales: {
-                        x: { ticks: { color: text, font: { family: "Inter" } }, grid: { display: false } },
-                        y: {
-                          beginAtZero: true,
-                          ticks: { color: text, precision: 0 },
-                          grid: { color: grid },
-                          border: { display: false },
-                          title: { display: true, text: "Remaining visits", color: text },
+              </CardHeader>
+              <CardContent>
+                <div className="relative h-72 w-full sm:h-80">
+                  {ready && (
+                    <Bar
+                      data={chartData}
+                      aria-label="Bar chart of remaining visits per member, coloured by card status"
+                      role="img"
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { backgroundColor: "#16213a", padding: 10, cornerRadius: 12, displayColors: false },
                         },
-                      },
-                    }}
-                  />
-                )}
-              </div>
-            </section>
+                        scales: {
+                          x: { ticks: { color: text, font: { family: "Inter" } }, grid: { display: false } },
+                          y: {
+                            beginAtZero: true,
+                            ticks: { color: text, precision: 0 },
+                            grid: { color: grid },
+                            border: { display: false },
+                            title: { display: true, text: "Remaining visits", color: text },
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
+
+      <ConfirmDialog
+        open={resetOpen}
+        onOpenChange={setResetOpen}
+        title="Reset demo data?"
+        description="Members and staff go back to the original demo list. Your changes in this browser are removed."
+        confirmLabel="Reset"
+        onConfirm={resetDemoData}
+      />
     </div>
   );
 };

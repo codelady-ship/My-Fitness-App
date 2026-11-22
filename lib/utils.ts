@@ -1,12 +1,3 @@
-/** Escape text before putting it into a SweetAlert2 `html` template. */
-export const esc = (value: unknown): string =>
-  String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-
 const DAY = 24 * 60 * 60 * 1000;
 
 /** ISO date (YYYY-MM-DD) `days` days before `now` (negative = in the future). */
@@ -62,21 +53,5 @@ export const fileToAvatar = (file: File, size = 240): Promise<string> =>
     };
     reader.readAsDataURL(file);
   });
-
-/** Wire an <input type="file"> inside a SweetAlert2 popup to a preview <img>. */
-export const bindAvatarInput = (inputId: string, previewId: string) => {
-  const input = document.getElementById(inputId) as HTMLInputElement | null;
-  const preview = document.getElementById(previewId) as HTMLImageElement | null;
-  input?.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    if (!file || !preview) return;
-    try {
-      preview.src = await fileToAvatar(file);
-      preview.dataset.changed = "1";
-    } catch {
-      /* ignore files that are not images */
-    }
-  });
-};
 
 export const DEFAULT_AVATAR = "/default-avatar.png";

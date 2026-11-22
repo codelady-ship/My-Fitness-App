@@ -1,36 +1,44 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { PlusIcon } from "lucide-react";
 import StaffCard from "./StaffCard";
-import useSidebarStore from "@/Store/SidebarStore";
+import StaffFormDialog from "./StaffFormDialog";
 import useDataStore from "@/Store/DataStore";
 import PageHeader from "@/src/Components/PageHeader";
-import { showStaffForm, toast } from "./staffModal";
+import { notifySuccess } from "@/src/Components/admin/notify";
+import { Button } from "@/src/Components/ui/button";
+import { Card } from "@/src/Components/ui/card";
 
 const Staff = () => {
-  const darkMode = useSidebarStore((s) => s.darkMode);
   const { staff, ready, addStaff } = useDataStore();
-
-  const addMember = async () => {
-    const member = await showStaffForm(darkMode, undefined, addStaff);
-    if (!member) return;
-    toast(`${member.FName} ${member.Lname} was added`, darkMode);
-  };
+  const [adding, setAdding] = useState(false);
 
   return (
     <div>
       <PageHeader title="Staff">
-        <button type="button" className="btn btn-coral btn-sm" onClick={addMember}>
-          + Add staff member
-        </button>
+        <Button type="button" size="sm" onClick={() => setAdding(true)}>
+          <PlusIcon aria-hidden /> Add staff member
+        </Button>
       </PageHeader>
 
-      {ready && staff.length === 0 && <p className="glass panel">No staff yet. Add the first member with the button above.</p>}
+      {ready && staff.length === 0 && (
+        <Card className="items-center px-6 py-12 text-center text-muted-foreground">
+          <p>No staff yet. Add the first member with the button above.</p>
+        </Card>
+      )}
 
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {staff.map((member) => (
-          <StaffCard key={member.id} {...member} darkMode={darkMode} />
+          <StaffCard key={member.id} {...member} />
         ))}
       </ul>
+
+      <StaffFormDialog
+        open={adding}
+        onOpenChange={setAdding}
+        save={addStaff}
+        onSaved={(member) => notifySuccess(`${member.FName} ${member.Lname} was added`)}
+      />
     </div>
   );
 };
