@@ -101,3 +101,8 @@ html:has(.admin-shell) :focus-visible {
 html:has(.admin-shell) :is([role="dialog"], [role="alertdialog"], [role="listbox"], [role="option"]):focus-visible {
   outline: none;
 }
+/* The page heading takes focus only when a dialog's opener is gone (use-return-focus gives it
+   tabindex="-1"): focus still lands there, without the ring. */
+html:has(.admin-shell) .admin-shell h1[tabindex="-1"]:focus-visible {
+  outline: none;
+}
